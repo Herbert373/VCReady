@@ -228,6 +228,58 @@ Prefer plain ASCII punctuation:
 
 
 
+\## Language Key Safety
+
+
+
+Internal language keys must use ASCII codes only.
+
+
+
+Use:
+
+\- en
+
+\- zh
+
+
+
+Do not use non-ASCII strings as internal dictionary keys for language routing.
+
+
+
+Avoid:
+
+\- TEXTS\["中文"]
+
+\- st.session\_state.language == "中文"
+
+\- any mojibake key such as TEXTS\["æ..."]
+
+
+
+Preferred structure:
+
+\- TEXTS\["en"]
+
+\- TEXTS\["zh"]
+
+\- LANGUAGE\_LABELS = {"en": "English", "zh": "中文"}
+
+
+
+The UI may display Chinese text, but internal routing keys must remain ASCII.
+
+
+
+If Chinese UI text is needed, edit the existing zh dictionary values only. Do not create new non-ASCII dictionary keys.
+
+
+
+Never copy terminal mojibake into source code.
+
+
+
 \## Git Workflow
 
 
