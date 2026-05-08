@@ -1,4 +1,4 @@
-"""Prompt templates for VCReady. Plain Markdown output — no JSON parsing."""
+"""Prompt templates for VCReady. Plain Markdown output - no JSON parsing."""
 
 QUESTION_PROMPT = """You are a senior early-stage venture capitalist known for being sharp, fair, and direct.
 You are about to meet a founder. Based on their background, project, evidence, and funding goal below, generate exactly 7 pressure-test questions that expose the weakest points of their founder narrative.
@@ -19,7 +19,7 @@ Rules:
 
 {language_instruction}
 
-Output format — plain Markdown, numbered list, no preamble, no closing remarks:
+Output format - plain Markdown, numbered list, no preamble, no closing remarks:
 
 1. <question one>
 2. <question two>
@@ -48,7 +48,7 @@ Be honest, specific, and constructive. Do not flatter. Score conservatively: 5 =
 
 Write the entire report in English.
 
-Output format — plain Markdown using EXACTLY these section headers, in this order, and nothing else before or after:
+Output format - plain Markdown using EXACTLY these section headers, in this order, and nothing else before or after:
 
 ## One-sentence diagnosis
 <one sentence>
@@ -96,7 +96,7 @@ REPORT_PROMPT_ZH = """你是一位资深的早期阶段风险投资人，正在�
 
 请严格使用中文输出，并严格按照下方的小节结构与顺序生成内容，不要在最前或最后添加任何额外文字。
 
-输出格式 —— 纯 Markdown，严格使用下列小节标题，顺序不变：
+输出格式 -- 纯 Markdown，严格使用下列小节标题，顺序不变：
 
 ## 一句话诊断
 <一句话>

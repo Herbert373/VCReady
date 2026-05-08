@@ -1,4 +1,4 @@
-"""VCReady — Founder Logic Pressure-Test Engine.
+"""VCReady - Founder Logic Pressure-Test Engine.
 
 A Streamlit prototype that simulates a sharp early-stage VC and produces
 a Founder Reflection Report. Built for portfolio purposes, not commercial use.
@@ -39,7 +39,7 @@ TEXTS = {
         "project_desc_label": "Project description",
         "project_desc_placeholder": "What you are building, for whom, and the core value proposition.",
         "evidence_label": "Current evidence",
-        "evidence_placeholder": "Traction, pilots, LOIs, interviews, prototypes, data — anything concrete.",
+        "evidence_placeholder": "Traction, pilots, LOIs, interviews, prototypes, data - anything concrete.",
         "goal_label": "Funding or partnership goal",
         "goal_placeholder": "What you want from this investor or partner meeting.",
         "btn_questions": "Generate Pressure-Test Questions",
@@ -82,7 +82,7 @@ TEXTS = {
         "project_desc_label": "项目简介",
         "project_desc_placeholder": "你在做什么、面向谁、核心价值主张是什么。",
         "evidence_label": "现有验证证据",
-        "evidence_placeholder": "进展、试点、意向书、访谈、原型、数据——任何可落地的证据。",
+        "evidence_placeholder": "进展、试点、意向书、访谈、原型、数据--任何可落地的证据。",
         "goal_label": "融资或合作目标",
         "goal_placeholder": "你希望从这次投资人或合作方会议中拿到什么。",
         "btn_questions": "生成压力测试问题",
@@ -165,7 +165,7 @@ def init_state() -> None:
 st.set_page_config(page_title="VCReady", layout="wide")
 init_state()
 
-# Language selector — rendered first so t[] is available for everything below.
+# Language selector - rendered first so t[] is available for everything below.
 with st.sidebar:
     language = st.selectbox("Language / 语言", ["English", "中文"], index=0)
 

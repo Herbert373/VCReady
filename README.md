@@ -1,14 +1,14 @@
-# VCReady — Founder Logic Pressure-Test Engine
+# VCReady - Founder Logic Pressure-Test Engine
 
 > An AI prototype that helps early-stage founders pressure-test their founder narrative before talking to investors.
 
 ## What this is
 
-VCReady is a working Streamlit prototype. A founder fills in their background, project, evidence, and funding goal. The app simulates a sharp early-stage VC, generates 7 pressure-test questions, and — after the founder answers — returns a structured Founder Reflection Report with scores and concrete advice.
+VCReady is a working Streamlit prototype. A founder fills in their background, project, evidence, and funding goal. The app simulates a sharp early-stage VC, generates 7 pressure-test questions, and - after the founder answers - returns a structured Founder Reflection Report with scores and concrete advice.
 
 ## Why it exists
 
-Early-stage founders often pitch the project when investors are actually evaluating the founder. VCReady surfaces the weakest seams in the founder's own narrative — founder-market fit, execution evidence, resilience, judgment, unfair advantage — before the real meeting happens.
+Early-stage founders often pitch the project when investors are actually evaluating the founder. VCReady surfaces the weakest seams in the founder's own narrative - founder-market fit, execution evidence, resilience, judgment, unfair advantage - before the real meeting happens.
 
 ## Features (MVP)
 
@@ -19,7 +19,7 @@ Early-stage founders often pitch the project when investors are actually evaluat
   - One-sentence diagnosis
   - Strongest part of the narrative
   - Biggest logic gap
-  - Scores (1–5) for Founder-Market Fit, Problem Urgency, Execution Evidence, Resilience, Unfair Advantage
+  - Scores (1-5) for Founder-Market Fit, Problem Urgency, Execution Evidence, Resilience, Unfair Advantage
   - Three questions the founder must answer before meeting investors
   - Concrete advice to improve the pitch
 - Download the report as `.txt`.
@@ -28,7 +28,7 @@ Early-stage founders often pitch the project when investors are actually evaluat
 
 - Python 3.10+
 - Streamlit
-- OpenAI Python SDK (used against any OpenAI-compatible endpoint — relay/proxy gateways included)
+- OpenAI Python SDK (used against any OpenAI-compatible endpoint - relay/proxy gateways included)
 - python-dotenv
 - Local CSV for the user-testing template (no database)
 
@@ -82,7 +82,7 @@ Defined in `.env.example`. The app reads the OpenAI-compatible block. Anthropic-
 | `OPENAI_API_KEY` | API key for the relay / OpenAI-compatible endpoint |
 | `OPENAI_BASE_URL` | Base URL of the relay (leave empty to use OpenAI default) |
 | `OPENAI_MODEL` | Model name exposed by the endpoint |
-| `ANTHROPIC_API_KEY` | Reserved — not wired into `app.py` yet |
+| `ANTHROPIC_API_KEY` | Reserved - not wired into `app.py` yet |
 | `ANTHROPIC_BASE_URL` | Reserved |
 | `ANTHROPIC_MODEL` | Reserved |
 
