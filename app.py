@@ -20,6 +20,21 @@ load_dotenv(override=True)
 TEXTS = {
     "English": {
         "subtitle": "Founder Logic Pressure-Test Engine",
+        "assessment_title": "Assessment Framework",
+        "assessment_items": [
+            "Founder-Market Fit",
+            "Problem Urgency",
+            "Execution Evidence",
+            "Resilience",
+            "Unfair Advantage",
+        ],
+        "workflow_title": "Workflow",
+        "workflow_steps": [
+            "Build Founder Dossier",
+            "Generate VC Pressure-Test Questions",
+            "Answer Under Investor Logic",
+            "Produce Founder Reflection Report",
+        ],
         "description": (
             "VCReady helps early-stage founders pressure-test their founder narrative "
             "before talking to investors. Fill in your context on the left, let the AI "
@@ -287,6 +302,65 @@ st.markdown(
         color: #fff8e7;
     }
 
+    .vc-section {
+        margin: 0 0 1rem 0;
+    }
+
+    .vc-section-title {
+        margin: 0 0 0.55rem 0;
+        color: var(--vc-text);
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0;
+    }
+
+    .vc-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
+
+    .vc-card {
+        padding: 0.7rem 0.75rem;
+        border: 1px solid var(--vc-border);
+        border-radius: 8px;
+        background: var(--vc-panel);
+        color: var(--vc-text);
+        font-size: 0.85rem;
+        font-weight: 600;
+        line-height: 1.3;
+        min-height: 3rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .vc-step-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
+
+    .vc-step {
+        padding: 0.7rem 0.75rem;
+        border: 1px solid var(--vc-border);
+        border-radius: 8px;
+        background: var(--vc-panel-2);
+        color: #eaf0fa;
+        font-size: 0.85rem;
+        line-height: 1.35;
+        min-height: 3.3rem;
+    }
+
+    .vc-step-index {
+        display: block;
+        margin-bottom: 0.2rem;
+        color: var(--vc-accent-2);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0;
+        text-transform: uppercase;
+    }
+
     hr, div[data-testid="stDivider"] {
         border-color: var(--vc-border);
     }
@@ -329,6 +403,64 @@ st.markdown(
             <span class="vc-badge">{hero_badges[0]}</span>
             <span class="vc-badge">{hero_badges[1]}</span>
             <span class="vc-badge">{hero_badges[2]}</span>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+if language == "English":
+    assessment_title = "Assessment Framework"
+    assessment_items = [
+        "Founder-Market Fit",
+        "Problem Urgency",
+        "Execution Evidence",
+        "Resilience",
+        "Unfair Advantage",
+    ]
+    workflow_title = "Workflow"
+    workflow_steps = [
+        "Build Founder Dossier",
+        "Generate VC Pressure-Test Questions",
+        "Answer Under Investor Logic",
+        "Produce Founder Reflection Report",
+    ]
+else:
+    assessment_title = "评估框架"
+    assessment_items = [
+        "创始人-市场匹配",
+        "问题紧迫性",
+        "执行证据",
+        "韧性",
+        "独特优势",
+    ]
+    workflow_title = "工作流程"
+    workflow_steps = [
+        "建立创始人档案",
+        "生成 VC 高压追问",
+        "在投资人逻辑下作答",
+        "生成创始人反思报告",
+    ]
+
+st.markdown(
+    f"""
+    <div class="vc-section">
+        <div class="vc-section-title">{assessment_title}</div>
+        <div class="vc-grid">
+            <div class="vc-card">{assessment_items[0]}</div>
+            <div class="vc-card">{assessment_items[1]}</div>
+            <div class="vc-card">{assessment_items[2]}</div>
+            <div class="vc-card">{assessment_items[3]}</div>
+            <div class="vc-card">{assessment_items[4]}</div>
+        </div>
+    </div>
+    <div class="vc-section">
+        <div class="vc-section-title">{workflow_title}</div>
+        <div class="vc-step-grid">
+            <div class="vc-step"><span class="vc-step-index">Step 1</span>{workflow_steps[0]}</div>
+            <div class="vc-step"><span class="vc-step-index">Step 2</span>{workflow_steps[1]}</div>
+            <div class="vc-step"><span class="vc-step-index">Step 3</span>{workflow_steps[2]}</div>
+            <div class="vc-step"><span class="vc-step-index">Step 4</span>{workflow_steps[3]}</div>
         </div>
     </div>
     """,
