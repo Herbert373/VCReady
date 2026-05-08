@@ -18,7 +18,7 @@ load_dotenv(override=True)
 # ---------- UI text (both languages) ----------
 
 TEXTS = {
-    "English": {
+    "en": {
         "subtitle": "Founder Logic Pressure-Test Engine",
         "assessment_title": "Assessment Framework",
         "assessment_items": [
@@ -77,7 +77,7 @@ TEXTS = {
         ),
         "language_instruction": "Please answer in English.",
     },
-    "中文": {
+    "zh": {
         "subtitle": "创始人逻辑压力测试引擎",
         "description": (
             "VCReady 帮助早期创始人在见投资人之前压力测试自己的创始人叙事。"
@@ -122,6 +122,7 @@ TEXTS = {
     },
 }
 
+LANGUAGE_LABELS = {"en": "English", "zh": "中文"}
 
 # ---------- API client ----------
 
@@ -372,11 +373,16 @@ init_state()
 
 # Language selector - rendered first so t[] is available for everything below.
 with st.sidebar:
-    language = st.selectbox("Language / 语言", ["English", "中文"], index=0)
+    language = st.selectbox(
+        "Language / 语言",
+        options=["en", "zh"],
+        index=0,
+        format_func=lambda code: LANGUAGE_LABELS[code],
+    )
 
 t = TEXTS[language]
 
-if language == "English":
+if language == "en":
     hero_tagline = "Founder Logic Pressure-Test Engine"
     hero_description = "AI-powered founder narrative assessment for early-stage investment conversations."
     hero_badges = [
@@ -409,7 +415,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-if language == "English":
+if language == "en":
     assessment_title = "Assessment Framework"
     assessment_items = [
         "Founder-Market Fit",
@@ -564,7 +570,7 @@ if st.session_state.questions_markdown:
                         "Founder's answers:\n"
                         f"{st.session_state.answers_text}"
                     )
-                    report_template = REPORT_PROMPT_EN if language == "English" else REPORT_PROMPT_ZH
+                    report_template = REPORT_PROMPT_EN if language == "en" else REPORT_PROMPT_ZH
                     prompt = report_template.format(
                         founder_background=st.session_state.founder_background,
                         project_description=st.session_state.project_description,

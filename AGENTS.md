@@ -306,6 +306,42 @@ Communication Style:
 
 
 
+\## Patch Failure Safety
+
+
+
+If a patch fails because of encoding, quoting, or context mismatch, stop and ask the user.
+
+
+
+Do not switch to:
+
+\- full-file rewrite
+
+\- PowerShell regex rewrite
+
+\- Node.js file rewrite
+
+\- temporary script that writes app.py
+
+\- git show HEAD:app.py followed by manual reconstruction
+
+
+
+Never use the real source file as a scratchpad or write-test target.
+
+
+
+If editing app.py becomes uncertain, stop and provide:
+
+1\. the failed patch location
+
+2\. the suspected reason
+
+3\. a safer manual patch plan
+
+
+
 \## Response Language
 
 
