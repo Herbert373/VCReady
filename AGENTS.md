@@ -22,6 +22,10 @@ This is not a commercial product, not a launched startup, not a funded company, 
 
 
 
+Before editing app.py, show the exact patch plan. Use patch-style edits only. Do not rewrite the full file. Do not use fs.writeFileSync to overwrite app.py.
+
+
+
 Work from first principles:
 
 1\. Understand the actual user goal.
