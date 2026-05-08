@@ -4,17 +4,21 @@
 
 ## What this is
 
-VCReady is a working Streamlit prototype. A founder fills in their background, project, evidence, and funding goal. The app simulates a sharp early-stage VC, generates 7 pressure-test questions, and - after the founder answers - returns a structured Founder Reflection Report with scores and concrete advice.
+VCReady is a working Streamlit prototype built for the HKUST(GZ) Red Bird MPhil application portfolio. A founder fills in their background, project, evidence, and funding goal. The app simulates a sharp early-stage VC, generates 7 pressure-test questions, and, after the founder answers, returns a structured Founder Reflection Report with scores and concrete advice.
 
 ## Why it exists
 
-Early-stage founders often pitch the project when investors are actually evaluating the founder. VCReady surfaces the weakest seams in the founder's own narrative - founder-market fit, execution evidence, resilience, judgment, unfair advantage - before the real meeting happens.
+Early-stage founders often pitch the project when investors are actually evaluating the founder. VCReady surfaces the weakest gaps in the founder's own narrative, including founder-market fit, execution evidence, resilience, judgment, and unfair advantage, before the real meeting happens.
 
 ## Features (MVP)
 
-- Sidebar inputs: founder background, project description, current evidence, funding or partnership goal.
-- One-click generation of 7 VC-style pressure-test questions covering founder-market fit, problem urgency, execution evidence, resilience, unfair advantage, go-to-market, and risk.
-- Per-question answer fields.
+- Bilingual UI with English and Chinese interface text.
+- Institutional Dark UI with an internal VC memo and data room visual direction.
+- Founder Dossier sidebar for founder background, project description, current evidence, and funding or partnership goal.
+- Assessment Framework cards for the core founder evaluation dimensions.
+- Workflow cards that show the end-to-end founder review sequence.
+- One-click generation of a VC Pressure-Test Memo with 7 investor-style questions.
+- Founder response area for a single structured answer pass.
 - Founder Reflection Report containing:
   - One-sentence diagnosis
   - Strongest part of the narrative
@@ -88,6 +92,13 @@ Defined in `.env.example`. The app reads the OpenAI-compatible block. Anthropic-
 
 `.env` is gitignored. Never commit it.
 
+## Future Iterations
+
+- Multi-model routing for different evaluation tasks.
+- Separate question model and report model.
+- Multi-round investor challenge mode.
+- User testing with a structured feedback template.
+
 ## Non-commercial disclaimer
 
-VCReady is a working prototype built for the HKUST-GZ Red Bird MPhil application portfolio. It is **not** a commercial product, has **no** users, **no** funding, and is **not** deployed to production. Every part of this repo should be read in that context.
+VCReady is a working prototype built for the HKUST(GZ) Red Bird MPhil application portfolio. It is **not** a commercial product, has **no** users, **no** funding, and is **not** deployed to production. Every part of this repo should be read in that context.
