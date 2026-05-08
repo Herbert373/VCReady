@@ -1,0 +1,302 @@
+"""VCReady — Founder Logic Pressure-Test Engine.
+
+A Streamlit prototype that simulates a sharp early-stage VC and produces
+a Founder Reflection Report. Built for portfolio purposes, not commercial use.
+"""
+
+import os
+
+import streamlit as st
+from dotenv import load_dotenv
+from openai import OpenAI
+
+from prompts import QUESTION_PROMPT, REPORT_PROMPT_EN, REPORT_PROMPT_ZH
+
+load_dotenv(override=True)
+
+
+# ---------- UI text (both languages) ----------
+
+TEXTS = {
+    "English": {
+        "subtitle": "Founder Logic Pressure-Test Engine",
+        "description": (
+            "VCReady helps early-stage founders pressure-test their founder narrative "
+            "before talking to investors. Fill in your context on the left, let the AI "
+            "VC grill you with 7 questions, then get a Founder Reflection Report."
+        ),
+        "how_it_works_title": "How it works",
+        "how_it_works_body": (
+            "1. Enter your founder background, project, current evidence, and funding goal.\n"
+            "2. Click **Generate Pressure-Test Questions** to receive 7 VC-style questions.\n"
+            "3. Write your honest answers in one answer box, referencing each question by number.\n"
+            "4. Click **Generate Founder Reflection Report** for a diagnostic with scores and advice.\n"
+            "5. Download the report as a `.txt` file."
+        ),
+        "sidebar_header": "Founder Context",
+        "founder_bg_label": "Founder background",
+        "founder_bg_placeholder": "Your experience, domain expertise, prior roles, why you are the person to solve this.",
+        "project_desc_label": "Project description",
+        "project_desc_placeholder": "What you are building, for whom, and the core value proposition.",
+        "evidence_label": "Current evidence",
+        "evidence_placeholder": "Traction, pilots, LOIs, interviews, prototypes, data — anything concrete.",
+        "goal_label": "Funding or partnership goal",
+        "goal_placeholder": "What you want from this investor or partner meeting.",
+        "btn_questions": "Generate Pressure-Test Questions",
+        "warn_fill_fields": "Please fill in all four founder context fields first.",
+        "spinner_questions": "The AI VC is preparing pressure-test questions...",
+        "err_questions": "Failed to generate questions: ",
+        "questions_subheader": "Pressure-Test Questions",
+        "answers_caption": "Answer all 7 questions below in one box. Reference each question by number. Vague answers produce vague diagnostics.",
+        "answers_label": "Your answers",
+        "answers_placeholder": "1. ...\n2. ...\n3. ...\n4. ...\n5. ...\n6. ...\n7. ...",
+        "btn_report": "Generate Founder Reflection Report",
+        "warn_write_answers": "Please write your answers before generating the report.",
+        "spinner_report": "The AI VC is writing your Founder Reflection Report...",
+        "err_report": "Failed to generate report: ",
+        "report_subheader": "Founder Reflection Report",
+        "btn_download": "Download Report (.txt)",
+        "footer": (
+            "VCReady is a working prototype built for the HKUST-GZ Red Bird MPhil application portfolio. "
+            "It is not a commercial product, has no users, no funding, and is not deployed to production."
+        ),
+        "language_instruction": "Please answer in English.",
+    },
+    "中文": {
+        "subtitle": "创始人逻辑压力测试引擎",
+        "description": (
+            "VCReady 帮助早期创始人在见投资人之前压力测试自己的创始人叙事。"
+            "在左侧填写你的背景信息，让 AI VC 用 7 个问题追问你，然后获得一份创始人反思报告。"
+        ),
+        "how_it_works_title": "使用流程",
+        "how_it_works_body": (
+            "1. 输入你的创始人背景、项目简介、现有验证证据和融资或合作目标。\n"
+            "2. 点击「生成压力测试问题」获得 7 个 VC 风格的追问。\n"
+            "3. 在答题框中如实作答，按编号对应。\n"
+            "4. 点击「生成创始人反思报告」拿到诊断与建议。\n"
+            "5. 下载 .txt 报告。"
+        ),
+        "sidebar_header": "创始人背景",
+        "founder_bg_label": "创始人背景",
+        "founder_bg_placeholder": "你的经历、领域专长、过往角色，以及为什么是你来解决这个问题。",
+        "project_desc_label": "项目简介",
+        "project_desc_placeholder": "你在做什么、面向谁、核心价值主张是什么。",
+        "evidence_label": "现有验证证据",
+        "evidence_placeholder": "进展、试点、意向书、访谈、原型、数据——任何可落地的证据。",
+        "goal_label": "融资或合作目标",
+        "goal_placeholder": "你希望从这次投资人或合作方会议中拿到什么。",
+        "btn_questions": "生成压力测试问题",
+        "warn_fill_fields": "请先填写左侧四个创始人背景字段。",
+        "spinner_questions": "AI VC 正在准备压力测试问题……",
+        "err_questions": "生成问题失败：",
+        "questions_subheader": "压力测试问题",
+        "answers_caption": "请在下方一个答题框中回答全部 7 个问题，按编号对应。回答越含糊，诊断越含糊。",
+        "answers_label": "你的回答",
+        "answers_placeholder": "1. ……\n2. ……\n3. ……\n4. ……\n5. ……\n6. ……\n7. ……",
+        "btn_report": "生成创始人反思报告",
+        "warn_write_answers": "请先写完回答再生成报告。",
+        "spinner_report": "AI VC 正在撰写你的创始人反思报告……",
+        "err_report": "生成报告失败：",
+        "report_subheader": "创始人反思报告",
+        "btn_download": "下载报告 (.txt)",
+        "footer": (
+            "VCReady 是为香港科技大学（广州）红鸟 MPhil 申请作品集构建的可运行原型。"
+            "它不是商业产品，没有真实用户，没有融资，也没有部署上线。"
+        ),
+        "language_instruction": "请用中文输出。",
+    },
+}
+
+
+# ---------- API client ----------
+
+def get_client() -> OpenAI:
+    """Build an OpenAI-compatible client. base_url is optional for relay endpoints."""
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    base_url = os.getenv("OPENAI_BASE_URL", "").strip() or None
+    if not api_key:
+        raise RuntimeError("OPENAI_API_KEY is missing. Set it in your .env file.")
+    return OpenAI(api_key=api_key, base_url=base_url)
+
+
+def _looks_like_html(s: str) -> bool:
+    head = s.lstrip().lower()[:200]
+    return head.startswith("<!doctype html") or head.startswith("<html")
+
+
+def call_model(prompt: str) -> str:
+    """Send a single-turn prompt and return the raw assistant text."""
+    model = os.getenv("OPENAI_MODEL", "").strip()
+    if not model:
+        raise RuntimeError("OPENAI_MODEL is missing. Set it in your .env file.")
+    client = get_client()
+    response = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.7,
+    )
+    # Some relay endpoints return a plain string instead of a ChatCompletion object.
+    if isinstance(response, str):
+        text = response
+    else:
+        text = response.choices[0].message.content or ""
+    if _looks_like_html(text):
+        raise RuntimeError(
+            "Your OPENAI_BASE_URL points to a web page, not an API endpoint. "
+            "Use the OpenAI-compatible API base URL, usually ending with /v1."
+        )
+    return text.strip()
+
+
+# ---------- Session state ----------
+
+def init_state() -> None:
+    st.session_state.setdefault("questions_markdown", "")
+    st.session_state.setdefault("answers_text", "")
+    st.session_state.setdefault("report_markdown", "")
+    st.session_state.setdefault("founder_background", "")
+    st.session_state.setdefault("project_description", "")
+    st.session_state.setdefault("current_evidence", "")
+    st.session_state.setdefault("funding_goal", "")
+
+
+# ---------- UI ----------
+
+st.set_page_config(page_title="VCReady", layout="wide")
+init_state()
+
+# Language selector — rendered first so t[] is available for everything below.
+with st.sidebar:
+    language = st.selectbox("Language / 语言", ["English", "中文"], index=0)
+
+t = TEXTS[language]
+
+st.title("VCReady")
+st.caption(t["subtitle"])
+st.write(t["description"])
+
+with st.expander(t["how_it_works_title"], expanded=False):
+    st.markdown(t["how_it_works_body"])
+
+
+# ---------- Sidebar: founder inputs ----------
+
+def inputs_ready() -> bool:
+    return all(
+        st.session_state[k].strip()
+        for k in ("founder_background", "project_description", "current_evidence", "funding_goal")
+    )
+
+
+with st.sidebar:
+    st.header(t["sidebar_header"])
+    st.session_state.founder_background = st.text_area(
+        t["founder_bg_label"],
+        value=st.session_state.founder_background,
+        height=120,
+        placeholder=t["founder_bg_placeholder"],
+    )
+    st.session_state.project_description = st.text_area(
+        t["project_desc_label"],
+        value=st.session_state.project_description,
+        height=120,
+        placeholder=t["project_desc_placeholder"],
+    )
+    st.session_state.current_evidence = st.text_area(
+        t["evidence_label"],
+        value=st.session_state.current_evidence,
+        height=120,
+        placeholder=t["evidence_placeholder"],
+    )
+    st.session_state.funding_goal = st.text_area(
+        t["goal_label"],
+        value=st.session_state.funding_goal,
+        height=100,
+        placeholder=t["goal_placeholder"],
+    )
+    generate_questions_clicked = st.button(
+        t["btn_questions"], type="primary", use_container_width=True
+    )
+
+
+# ---------- Step 1: generate questions ----------
+
+if generate_questions_clicked:
+    if not inputs_ready():
+        st.warning(t["warn_fill_fields"])
+    else:
+        with st.spinner(t["spinner_questions"]):
+            try:
+                prompt = QUESTION_PROMPT.format(
+                    founder_background=st.session_state.founder_background,
+                    project_description=st.session_state.project_description,
+                    current_evidence=st.session_state.current_evidence,
+                    funding_goal=st.session_state.funding_goal,
+                    language_instruction=t["language_instruction"],
+                )
+                raw = call_model(prompt)
+                st.session_state.questions_markdown = raw
+                st.session_state.answers_text = ""
+                st.session_state.report_markdown = ""
+                st.session_state.pop("answers_textarea", None)
+            except Exception as e:
+                st.error(f"{t['err_questions']}{e}")
+
+
+# ---------- Step 2: display questions, collect answers ----------
+
+if st.session_state.questions_markdown:
+    st.subheader(t["questions_subheader"])
+    st.caption(t["answers_caption"])
+    st.markdown(st.session_state.questions_markdown)
+
+    st.session_state.answers_text = st.text_area(
+        t["answers_label"],
+        value=st.session_state.answers_text,
+        key="answers_textarea",
+        height=320,
+        placeholder=t["answers_placeholder"],
+    )
+
+    generate_report_clicked = st.button(t["btn_report"], type="primary")
+
+    if generate_report_clicked:
+        if not st.session_state.answers_text.strip():
+            st.warning(t["warn_write_answers"])
+        else:
+            with st.spinner(t["spinner_report"]):
+                try:
+                    qa_transcript = (
+                        "Questions:\n"
+                        f"{st.session_state.questions_markdown}\n\n"
+                        "Founder's answers:\n"
+                        f"{st.session_state.answers_text}"
+                    )
+                    report_template = REPORT_PROMPT_EN if language == "English" else REPORT_PROMPT_ZH
+                    prompt = report_template.format(
+                        founder_background=st.session_state.founder_background,
+                        project_description=st.session_state.project_description,
+                        current_evidence=st.session_state.current_evidence,
+                        funding_goal=st.session_state.funding_goal,
+                        qa_transcript=qa_transcript,
+                    )
+                    st.session_state.report_markdown = call_model(prompt)
+                except Exception as e:
+                    st.error(f"{t['err_report']}{e}")
+
+
+# ---------- Step 3: render report + download ----------
+
+if st.session_state.report_markdown:
+    st.subheader(t["report_subheader"])
+    st.markdown(st.session_state.report_markdown)
+
+    st.download_button(
+        label=t["btn_download"],
+        data=st.session_state.report_markdown,
+        file_name="vcready_founder_reflection_report.txt",
+        mime="text/plain",
+    )
+
+st.divider()
+st.caption(t["footer"])
