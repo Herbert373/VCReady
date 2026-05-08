@@ -362,6 +362,57 @@ st.markdown(
         text-transform: uppercase;
     }
 
+    .vc-memo {
+        margin: 1.15rem 0;
+        border: 1px solid var(--vc-border);
+        border-radius: 8px;
+        background: linear-gradient(180deg, rgba(18, 34, 56, 0.96), rgba(15, 27, 45, 0.98));
+        overflow: hidden;
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.18);
+    }
+
+    .vc-memo-header {
+        padding: 0.95rem 1rem 0.85rem 1rem;
+    }
+
+    .vc-memo-kicker {
+        margin: 0 0 0.35rem 0;
+        color: var(--vc-accent-2);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .vc-memo-title {
+        margin: 0;
+        color: var(--vc-text);
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0;
+    }
+
+    .vc-memo-subtitle {
+        margin: 0.3rem 0 0 0;
+        color: var(--vc-muted);
+        font-size: 0.83rem;
+        line-height: 1.45;
+    }
+
+    .vc-memo-divider {
+        height: 1px;
+        background: var(--vc-border);
+    }
+
+    .vc-memo-body {
+        padding: 0.95rem 1rem 1rem 1rem;
+        background: rgba(8, 17, 31, 0.22);
+    }
+
+    .vc-memo-actions {
+        margin-top: 0.85rem;
+    }
+
     hr, div[data-testid="stDivider"] {
         border-color: var(--vc-border);
     }
