@@ -302,9 +302,38 @@ with st.sidebar:
 
 t = TEXTS[language]
 
-st.title("VCReady")
-st.caption(t["subtitle"])
-st.write(t["description"])
+if language == "English":
+    hero_tagline = "Founder Logic Pressure-Test Engine"
+    hero_description = "AI-powered founder narrative assessment for early-stage investment conversations."
+    hero_badges = [
+        "Founder-Market Fit",
+        "Execution Evidence",
+        "Investor Narrative",
+    ]
+else:
+    hero_tagline = "创始人逻辑压力测试引擎"
+    hero_description = "面向早期创业者的 AI 创始人叙事评估与投资人逻辑诊断工具。"
+    hero_badges = [
+        "创始人-市场匹配",
+        "执行证据",
+        "投资人叙事",
+    ]
+
+st.markdown(
+    f"""
+    <div class="vc-hero">
+        <h1 class="vc-hero-title">VCReady</h1>
+        <p class="vc-hero-tagline">{hero_tagline}</p>
+        <p class="vc-hero-description">{hero_description}</p>
+        <div class="vc-badges">
+            <span class="vc-badge">{hero_badges[0]}</span>
+            <span class="vc-badge">{hero_badges[1]}</span>
+            <span class="vc-badge">{hero_badges[2]}</span>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 with st.expander(t["how_it_works_title"], expanded=False):
     st.markdown(t["how_it_works_body"])
