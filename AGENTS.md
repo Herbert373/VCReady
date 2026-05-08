@@ -248,3 +248,15 @@ Communication Style:
 
 \-Do not add unrelated features.
 
+
+
+\## Response Language
+
+
+
+Use Chinese for all explanations, plans, risk notes, summaries, and testing instructions addressed to the user.
+
+
+
+Keep code, variable names, function names, CSS class names, CLI commands, and English UI copy in English when appropriate.
+
