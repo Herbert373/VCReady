@@ -72,8 +72,9 @@ TEXTS = {
         "report_subheader": "Founder Reflection Report",
         "btn_download": "Download Report (.txt)",
         "footer": (
-            "VCReady is a working prototype built for the HKUST-GZ Red Bird MPhil application portfolio. "
-            "It is not a commercial product, has no users, no funding, and is not deployed to production."
+            "VCReady is an AI product prototype built for the founder's portfolio. "
+            "It demonstrates founder narrative pressure-testing, prompt design, and prototype implementation. "
+            "The current version is for portfolio demonstration only and is not a commercial or production-deployed product."
         ),
         "language_instruction": "Please answer in English.",
     },
@@ -115,8 +116,8 @@ TEXTS = {
         "report_subheader": "创始人反思报告",
         "btn_download": "下载报告 (.txt)",
         "footer": (
-            "VCReady 是为香港科技大学（广州）红鸟 MPhil 申请作品集构建的可运行原型。"
-            "它不是商业产品，没有真实用户，没有融资，也没有部署上线。"
+            "VCReady 是作者作品集构建的 AI 产品原型，用于展示创始人叙事压力测试、Prompt 设计与原型实现能力。"
+            "当前版本仅用于作品集展示，并非商业化产品或生产环境部署。"
         ),
         "language_instruction": "请用中文输出。",
     },
