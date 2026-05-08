@@ -595,10 +595,32 @@ if generate_questions_clicked:
 # ---------- Step 2: display questions, collect answers ----------
 
 if st.session_state.questions_markdown:
-    st.subheader(t["questions_subheader"])
-    st.caption(t["answers_caption"])
+    st.markdown(
+        f"""
+        <div class="vc-memo">
+            <div class="vc-memo-header">
+                <p class="vc-memo-kicker">VC MEMO</p>
+                <h3 class="vc-memo-title">{t["questions_subheader"]}</h3>
+                <p class="vc-memo-subtitle">{t["answers_caption"]}</p>
+            </div>
+            <div class="vc-memo-divider"></div>
+            <div class="vc-memo-body">
+        """,
+        unsafe_allow_html=True,
+    )
     st.markdown(st.session_state.questions_markdown)
+    st.markdown("</div></div>", unsafe_allow_html=True)
 
+    st.markdown(
+        f"""
+        <div class="vc-memo-header" style="padding: 0.2rem 0 0.6rem 0;">
+            <p class="vc-memo-kicker">FOUNDER RESPONSE</p>
+            <h3 class="vc-memo-title">{t["answers_label"]}</h3>
+            <p class="vc-memo-subtitle">{t["answers_caption"]}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     st.session_state.answers_text = st.text_area(
         t["answers_label"],
         value=st.session_state.answers_text,
@@ -637,8 +659,20 @@ if st.session_state.questions_markdown:
 # ---------- Step 3: render report + download ----------
 
 if st.session_state.report_markdown:
-    st.subheader(t["report_subheader"])
+    st.markdown(
+        f"""
+        <div class="vc-memo">
+            <div class="vc-memo-header">
+                <p class="vc-memo-kicker">REFLECTION REPORT</p>
+                <h3 class="vc-memo-title">{t["report_subheader"]}</h3>
+            </div>
+            <div class="vc-memo-divider"></div>
+            <div class="vc-memo-body">
+        """,
+        unsafe_allow_html=True,
+    )
     st.markdown(st.session_state.report_markdown)
+    st.markdown("</div></div>", unsafe_allow_html=True)
 
     st.download_button(
         label=t["btn_download"],
