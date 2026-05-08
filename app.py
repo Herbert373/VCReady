@@ -205,6 +205,10 @@ st.markdown(
         background: var(--vc-bg);
     }
 
+    section.main > div {
+        padding-top: 1.2rem;
+    }
+
     div[data-testid="stHeader"] {
         background: transparent;
     }
@@ -216,6 +220,12 @@ st.markdown(
     div[data-testid="stSidebar"] {
         background: var(--vc-sidebar);
         border-right: 1px solid var(--vc-border);
+    }
+
+    div[data-testid="stSidebar"] > div:first-child {
+        background:
+            linear-gradient(180deg, rgba(214, 179, 106, 0.04), rgba(214, 179, 106, 0)),
+            var(--vc-sidebar);
     }
 
     div[data-testid="stSidebar"] * {
@@ -236,6 +246,7 @@ st.markdown(
         background: var(--vc-panel);
         border: 1px solid var(--vc-border);
         border-radius: 8px;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
     }
 
     div[data-testid="stExpander"] summary {
@@ -248,6 +259,7 @@ st.markdown(
         background: var(--vc-input);
         color: var(--vc-text);
         border: 1px solid var(--vc-border);
+        border-radius: 8px;
     }
 
     div[data-testid="stTextArea"] textarea::placeholder,
@@ -264,6 +276,7 @@ st.markdown(
     div[data-baseweb="select"] > div {
         background: var(--vc-input);
         border-color: var(--vc-border);
+        min-height: 2.65rem;
     }
 
     div[data-baseweb="select"] * {
@@ -274,17 +287,23 @@ st.markdown(
         background: linear-gradient(180deg, var(--vc-accent), #355fd6);
         color: #f8fafc;
         border: 1px solid #6d8fff;
+        border-radius: 8px;
+        min-height: 2.7rem;
+        font-weight: 600;
+        box-shadow: 0 10px 22px rgba(34, 74, 160, 0.24);
     }
 
     button[kind="primary"]:hover {
         background: linear-gradient(180deg, #648cff, #416ae0);
         border-color: #8aa4ff;
+        transform: translateY(-1px);
     }
 
     button[kind="secondary"] {
         background: var(--vc-panel-2);
         color: var(--vc-text);
         border: 1px solid var(--vc-border);
+        border-radius: 8px;
     }
 
     button[kind="secondary"]:hover {
@@ -296,6 +315,8 @@ st.markdown(
         background: var(--vc-panel-2);
         color: var(--vc-text);
         border: 1px solid var(--vc-border);
+        border-radius: 8px;
+        min-height: 2.7rem;
     }
 
     div[data-testid="stDownloadButton"] button:hover {
@@ -304,15 +325,69 @@ st.markdown(
     }
 
     .vc-section {
-        margin: 0 0 1rem 0;
+        margin: 0 0 1.1rem 0;
     }
 
     .vc-section-title {
-        margin: 0 0 0.55rem 0;
+        margin: 0 0 0.7rem 0;
         color: var(--vc-text);
-        font-size: 1rem;
-        font-weight: 700;
+        font-size: 0.95rem;
+        font-weight: 750;
         letter-spacing: 0;
+        text-transform: uppercase;
+    }
+
+    .vc-hero {
+        margin: 0 0 1.15rem 0;
+        padding: 1.25rem 1.3rem 1.15rem 1.3rem;
+        border: 1px solid rgba(214, 179, 106, 0.22);
+        border-radius: 8px;
+        background:
+            linear-gradient(180deg, rgba(214, 179, 106, 0.06), rgba(214, 179, 106, 0)),
+            linear-gradient(180deg, rgba(18, 34, 56, 0.98), rgba(12, 23, 40, 0.98));
+        box-shadow: 0 20px 44px rgba(0, 0, 0, 0.2);
+    }
+
+    .vc-hero-title {
+        margin: 0;
+        font-size: 2rem;
+        line-height: 1.05;
+        font-weight: 800;
+    }
+
+    .vc-hero-tagline {
+        margin: 0.35rem 0 0 0;
+        color: #dce5f5;
+        font-size: 0.98rem;
+        font-weight: 650;
+    }
+
+    .vc-hero-description {
+        max-width: 52rem;
+        margin: 0.55rem 0 0 0;
+        color: var(--vc-muted);
+        font-size: 0.92rem;
+        line-height: 1.55;
+    }
+
+    .vc-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-top: 0.8rem;
+    }
+
+    .vc-badge {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2rem;
+        padding: 0.22rem 0.65rem;
+        border: 1px solid rgba(79, 124, 255, 0.26);
+        border-radius: 999px;
+        background: rgba(79, 124, 255, 0.08);
+        color: #dde7ff;
+        font-size: 0.76rem;
+        font-weight: 600;
     }
 
     .vc-grid {
@@ -322,17 +397,18 @@ st.markdown(
     }
 
     .vc-card {
-        padding: 0.7rem 0.75rem;
+        padding: 0.8rem 0.85rem;
         border: 1px solid var(--vc-border);
         border-radius: 8px;
-        background: var(--vc-panel);
+        background: linear-gradient(180deg, rgba(18, 34, 56, 0.96), rgba(15, 27, 45, 0.98));
         color: var(--vc-text);
         font-size: 0.85rem;
         font-weight: 600;
         line-height: 1.3;
-        min-height: 3rem;
+        min-height: 3.2rem;
         display: flex;
         align-items: center;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
     }
 
     .vc-step-grid {
@@ -342,14 +418,15 @@ st.markdown(
     }
 
     .vc-step {
-        padding: 0.7rem 0.75rem;
+        padding: 0.8rem 0.85rem;
         border: 1px solid var(--vc-border);
         border-radius: 8px;
-        background: var(--vc-panel-2);
+        background: linear-gradient(180deg, rgba(20, 37, 59, 0.98), rgba(15, 27, 45, 0.98));
         color: #eaf0fa;
         font-size: 0.85rem;
         line-height: 1.35;
-        min-height: 3.3rem;
+        min-height: 3.6rem;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
     }
 
     .vc-step-index {
@@ -372,7 +449,7 @@ st.markdown(
     }
 
     .vc-memo-header {
-        padding: 0.95rem 1rem 0.85rem 1rem;
+        padding: 1rem 1.05rem 0.9rem 1.05rem;
     }
 
     .vc-memo-kicker {
@@ -405,12 +482,33 @@ st.markdown(
     }
 
     .vc-memo-body {
-        padding: 0.95rem 1rem 1rem 1rem;
+        padding: 1rem 1.05rem 1.05rem 1.05rem;
         background: rgba(8, 17, 31, 0.22);
     }
 
     .vc-memo-actions {
         margin-top: 0.85rem;
+    }
+
+    div[data-testid="stTextArea"] {
+        margin-bottom: 0.25rem;
+    }
+
+    div[data-testid="stButton"] button,
+    div[data-testid="stDownloadButton"] button {
+        transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+    }
+
+    div[data-testid="stButton"] button:focus,
+    div[data-testid="stDownloadButton"] button:focus {
+        box-shadow: 0 0 0 1px rgba(214, 179, 106, 0.55);
+        outline: none;
+    }
+
+    div[data-testid="stButton"] button:disabled,
+    div[data-testid="stDownloadButton"] button:disabled {
+        opacity: 0.58;
+        box-shadow: none;
     }
 
     hr, div[data-testid="stDivider"] {
