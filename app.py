@@ -163,6 +163,137 @@ def init_state() -> None:
 # ---------- UI ----------
 
 st.set_page_config(page_title="VCReady", layout="wide")
+st.markdown(
+    """
+    <style>
+    /* Institutional Dark theme overrides */
+    :root {
+        --vc-bg: #08111f;
+        --vc-panel: #0f1b2d;
+        --vc-panel-2: #122238;
+        --vc-sidebar: #0c1728;
+        --vc-border: #22324a;
+        --vc-text: #f3f4f6;
+        --vc-muted: #a6b0bf;
+        --vc-accent: #4f7cff;
+        --vc-accent-2: #d6b36a;
+        --vc-input: #0e1a2b;
+    }
+
+    .stApp {
+        background: var(--vc-bg);
+        color: var(--vc-text);
+    }
+
+    div[data-testid="stAppViewContainer"] {
+        background: var(--vc-bg);
+    }
+
+    div[data-testid="stHeader"] {
+        background: transparent;
+    }
+
+    div[data-testid="stToolbar"] {
+        right: 1rem;
+    }
+
+    div[data-testid="stSidebar"] {
+        background: var(--vc-sidebar);
+        border-right: 1px solid var(--vc-border);
+    }
+
+    div[data-testid="stSidebar"] * {
+        color: var(--vc-text);
+    }
+
+    h1, h2, h3, h4, h5, h6,
+    p, label, span, div,
+    .stMarkdown, .stCaption {
+        color: var(--vc-text);
+    }
+
+    [data-testid="stCaptionContainer"] {
+        color: var(--vc-muted);
+    }
+
+    div[data-testid="stExpander"] {
+        background: var(--vc-panel);
+        border: 1px solid var(--vc-border);
+        border-radius: 8px;
+    }
+
+    div[data-testid="stExpander"] summary {
+        color: var(--vc-text);
+    }
+
+    div[data-testid="stTextArea"] textarea,
+    div[data-testid="stTextInput"] input,
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
+        background: var(--vc-input);
+        color: var(--vc-text);
+        border: 1px solid var(--vc-border);
+    }
+
+    div[data-testid="stTextArea"] textarea::placeholder,
+    div[data-testid="stTextInput"] input::placeholder {
+        color: var(--vc-muted);
+    }
+
+    div[data-testid="stTextArea"] textarea:focus,
+    div[data-testid="stTextInput"] input:focus {
+        border-color: var(--vc-accent);
+        box-shadow: 0 0 0 1px var(--vc-accent);
+    }
+
+    div[data-baseweb="select"] > div {
+        background: var(--vc-input);
+        border-color: var(--vc-border);
+    }
+
+    div[data-baseweb="select"] * {
+        color: var(--vc-text);
+    }
+
+    button[kind="primary"] {
+        background: linear-gradient(180deg, var(--vc-accent), #355fd6);
+        color: #f8fafc;
+        border: 1px solid #6d8fff;
+    }
+
+    button[kind="primary"]:hover {
+        background: linear-gradient(180deg, #648cff, #416ae0);
+        border-color: #8aa4ff;
+    }
+
+    button[kind="secondary"] {
+        background: var(--vc-panel-2);
+        color: var(--vc-text);
+        border: 1px solid var(--vc-border);
+    }
+
+    button[kind="secondary"]:hover {
+        border-color: var(--vc-accent-2);
+        color: #fff8e7;
+    }
+
+    div[data-testid="stDownloadButton"] button {
+        background: var(--vc-panel-2);
+        color: var(--vc-text);
+        border: 1px solid var(--vc-border);
+    }
+
+    div[data-testid="stDownloadButton"] button:hover {
+        border-color: var(--vc-accent-2);
+        color: #fff8e7;
+    }
+
+    hr, div[data-testid="stDivider"] {
+        border-color: var(--vc-border);
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 init_state()
 
 # Language selector - rendered first so t[] is available for everything below.
