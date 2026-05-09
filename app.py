@@ -7,6 +7,7 @@ a Founder Reflection Report. Built for portfolio purposes, not commercial use.
 import json
 import os
 import re
+import time
 
 import streamlit as st
 from dotenv import load_dotenv
@@ -110,6 +111,13 @@ TEXTS = {
         "review_placeholder_body": "Review your answers before generating the Founder Reflection Report.",
         "review_answer_placeholder": "Edit this answer before generating the report.",
         "scaffold_expander_title": "How to think about this question",
+        "report_progress_preparing_profile": "Preparing founder dossier",
+        "report_progress_compiling_answers": "Compiling answers",
+        "report_progress_building_request": "Building assessment request",
+        "report_progress_calling_model": "Calling report model",
+        "report_progress_parsing_structure": "Parsing report structure",
+        "report_progress_preparing_display": "Preparing report display",
+        "report_progress_ready": "Report ready",
         "footer": (
             "VCReady is an AI product prototype built for the founder's portfolio. "
             "It demonstrates founder narrative pressure-testing, prompt design, and prototype implementation. "
@@ -191,6 +199,13 @@ TEXTS = {
         "review_placeholder_body": "请在生成创始人反思报告前复核全部回答。",
         "review_answer_placeholder": "生成报告前可在这里修改这道题的回答。",
         "scaffold_expander_title": "如何思考这个问题",
+        "report_progress_preparing_profile": "正在整理创始人档案",
+        "report_progress_compiling_answers": "正在汇总全部回答",
+        "report_progress_building_request": "正在构建评估请求",
+        "report_progress_calling_model": "正在调用报告模型",
+        "report_progress_parsing_structure": "正在解析报告结构",
+        "report_progress_preparing_display": "正在准备报告展示",
+        "report_progress_ready": "报告已生成",
         "footer": (
             "VCReady 是作者作品集构建的 AI 产品原型，用于展示创始人叙事压力测试、Prompt 设计与原型实现能力。"
             "当前版本仅用于作品集展示，并非商业化产品或生产环境部署。"
@@ -363,6 +378,8 @@ def init_state() -> None:
     st.session_state.setdefault("report_sections", {})
     st.session_state.setdefault("report_json", {})
     st.session_state.setdefault("report_ready", False)
+    st.session_state.setdefault("report_progress_value", 0)
+    st.session_state.setdefault("report_progress_label", "")
     if st.session_state.flow_step == "dossier":
         st.session_state.flow_step = "profile"
 
@@ -409,6 +426,8 @@ def reset_guided_session_state() -> None:
     st.session_state.report_sections = {}
     st.session_state.report_json = {}
     st.session_state.report_ready = False
+    st.session_state.report_progress_value = 0
+    st.session_state.report_progress_label = ""
     st.session_state.founder_background = ""
     st.session_state.project_description = ""
     st.session_state.current_evidence = ""
@@ -1450,24 +1469,44 @@ if st.session_state.flow_step == "guided_answer" and st.session_state.questions_
 
     nav_cols = st.columns([1, 1, 1, 1])
     with nav_cols[0]:
-        if current_index > 0 and st.button(t["btn_previous_question"], use_container_width=True):
-            sync_current_answer(current_index, current_answer)
-            st.session_state.current_question_index = current_index - 1
-            st.rerun()
+        previous_clicked = st.button(
+            t["btn_previous_question"],
+            use_container_width=True,
+            disabled=current_index == 0,
+        )
     with nav_cols[1]:
-        if st.button(t["btn_save_answer"], use_container_width=True):
-            sync_current_answer(current_index, current_answer)
-            st.success(t["answer_saved_status"])
+        save_clicked = st.button(
+            t["btn_save_answer"],
+            use_container_width=True,
+        )
     with nav_cols[2]:
-        if current_index < question_count - 1 and st.button(t["btn_next_question"], use_container_width=True):
-            sync_current_answer(current_index, current_answer)
-            st.session_state.current_question_index = current_index + 1
-            st.rerun()
+        next_clicked = st.button(
+            t["btn_next_question"],
+            use_container_width=True,
+            disabled=current_index >= question_count - 1,
+        )
     with nav_cols[3]:
-        if st.button(t["btn_review_all_answers"], type="primary", use_container_width=True):
-            sync_current_answer(current_index, current_answer)
-            st.session_state.flow_step = "review_all"
-            st.rerun()
+        review_clicked = st.button(
+            t["btn_review_all_answers"],
+            type="primary",
+            use_container_width=True,
+        )
+
+    if previous_clicked:
+        sync_current_answer(current_index, current_answer)
+        st.session_state.current_question_index = current_index - 1
+        st.rerun()
+    if save_clicked:
+        sync_current_answer(current_index, current_answer)
+        st.success(t["answer_saved_status"])
+    if next_clicked:
+        sync_current_answer(current_index, current_answer)
+        st.session_state.current_question_index = current_index + 1
+        st.rerun()
+    if review_clicked:
+        sync_current_answer(current_index, current_answer)
+        st.session_state.flow_step = "review_all"
+        st.rerun()
 
 elif st.session_state.flow_step == "review_all":
     sync_review_answers()
@@ -1507,42 +1546,80 @@ elif st.session_state.flow_step == "review_all":
 
     review_cols = st.columns([1, 1])
     with review_cols[0]:
-        if st.button(t["btn_back_to_guided"], use_container_width=True):
-            sync_review_answers()
-            st.session_state.flow_step = "guided_answer"
-            st.rerun()
+        back_to_guided_clicked = st.button(t["btn_back_to_guided"], use_container_width=True)
     with review_cols[1]:
-        if st.button(t["btn_report"], type="primary", use_container_width=True):
+        generate_report_clicked = st.button(t["btn_report"], type="primary", use_container_width=True)
+
+    if back_to_guided_clicked:
+        sync_review_answers()
+        st.session_state.flow_step = "guided_answer"
+        st.rerun()
+
+    if generate_report_clicked:
+        progress_placeholder = st.empty()
+        status_placeholder = st.empty()
+        progress_bar = progress_placeholder.progress(0)
+
+        def update_report_progress(value: int, label: str, delay: float = 0.18) -> None:
+            st.session_state.report_progress_value = value
+            st.session_state.report_progress_label = label
+            progress_bar.progress(value)
+            status_placeholder.info(label)
+            if delay > 0:
+                time.sleep(delay)
+
+        try:
+            update_report_progress(10, t["report_progress_preparing_profile"])
+            founder_profile = st.session_state.founder_profile
+
+            update_report_progress(25, t["report_progress_compiling_answers"])
             sync_review_answers()
             st.session_state.answers_text = build_review_answers_text()
             if not st.session_state.answers_text.strip():
+                progress_placeholder.empty()
+                status_placeholder.empty()
                 st.warning(t["warn_write_answers"])
             else:
-                with st.spinner(t["spinner_report"]):
-                    try:
-                        qa_transcript = (
-                            "Questions:\n"
-                            f"{st.session_state.questions_markdown}\n\n"
-                            "Founder's answers:\n"
-                            f"{st.session_state.answers_text}"
-                        )
-                        report_template = REPORT_PROMPT_EN if language == "en" else REPORT_PROMPT_ZH
-                        prompt = report_template.format(
-                            founder_background=st.session_state.founder_background,
-                            project_description=st.session_state.project_description,
-                            current_evidence=st.session_state.current_evidence,
-                            funding_goal=st.session_state.funding_goal,
-                            qa_transcript=qa_transcript,
-                        )
-                        report_text = call_model(prompt)
-                        st.session_state.report_markdown = report_text
-                        st.session_state.report_json = safe_parse_report_json(report_text)
-                        st.session_state.report_sections = parse_report_markdown_sections(report_text)
-                        st.session_state.report_ready = True
-                        st.session_state.flow_step = "report_ready"
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"{t['err_report']}{e}")
+                update_report_progress(45, t["report_progress_building_request"], delay=0.22)
+                qa_transcript = (
+                    "Questions:\n"
+                    f"{st.session_state.questions_markdown}\n\n"
+                    "Founder's answers:\n"
+                    f"{st.session_state.answers_text}"
+                )
+                report_template = REPORT_PROMPT_EN if language == "en" else REPORT_PROMPT_ZH
+                prompt = report_template.format(
+                    founder_background=founder_profile.get("founder_background", st.session_state.founder_background),
+                    project_description=founder_profile.get("project_description", st.session_state.project_description),
+                    current_evidence=founder_profile.get("current_evidence", st.session_state.current_evidence),
+                    funding_goal=founder_profile.get("funding_goal", st.session_state.funding_goal),
+                    qa_transcript=qa_transcript,
+                )
+
+                update_report_progress(65, t["report_progress_calling_model"], delay=0.3)
+                report_text = call_model(prompt)
+
+                update_report_progress(85, t["report_progress_parsing_structure"], delay=0.18)
+                st.session_state.report_markdown = report_text
+                st.session_state.report_json = safe_parse_report_json(report_text)
+                st.session_state.report_sections = parse_report_markdown_sections(report_text)
+
+                update_report_progress(95, t["report_progress_preparing_display"], delay=0.16)
+                st.session_state.report_ready = True
+                st.session_state.flow_step = "report_ready"
+
+                st.session_state.report_progress_value = 100
+                st.session_state.report_progress_label = t["report_progress_ready"]
+                progress_bar.progress(100)
+                status_placeholder.success(st.session_state.report_progress_label)
+                time.sleep(0.18)
+                st.rerun()
+        except Exception as e:
+            progress_placeholder.empty()
+            status_placeholder.empty()
+            st.session_state.report_progress_value = 0
+            st.session_state.report_progress_label = ""
+            st.error(f"{t['err_report']}{e}")
 
 elif st.session_state.flow_step == "questions_fallback" and st.session_state.questions_markdown:
     st.warning(t["guided_fallback_notice"])
