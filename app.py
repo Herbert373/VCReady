@@ -4,7 +4,9 @@ A Streamlit prototype that simulates a sharp early-stage VC and produces
 a Founder Reflection Report. Built for portfolio purposes, not commercial use.
 """
 
+import json
 import os
+import re
 
 import streamlit as st
 from dotenv import load_dotenv
@@ -165,6 +167,109 @@ def call_model(prompt: str) -> str:
     return text.strip()
 
 
+def parse_questions(markdown_text: str) -> list[str]:
+    """Extract numbered questions from Markdown while keeping the raw text usable."""
+    if not isinstance(markdown_text, str) or not markdown_text.strip():
+        return []
+
+    try:
+        question_pattern = re.compile(r"^\s*(\d{1,2})[\.\)、]\s*(.+?)\s*$")
+        questions: list[str] = []
+        current_parts: list[str] = []
+
+        for line in markdown_text.splitlines():
+            stripped = line.strip()
+            if not stripped:
+                continue
+
+            match = question_pattern.match(stripped)
+            if match:
+                if current_parts:
+                    questions.append(" ".join(current_parts).strip())
+                current_parts = [match.group(2).strip()]
+            elif current_parts:
+                current_parts.append(stripped)
+
+        if current_parts:
+            questions.append(" ".join(current_parts).strip())
+
+        return [question for question in questions if question]
+    except Exception:
+        return []
+
+
+def parse_report_markdown_sections(markdown_text: str) -> dict:
+    """Split a Markdown report into heading-based sections when possible."""
+    if not isinstance(markdown_text, str) or not markdown_text.strip():
+        return {}
+
+    try:
+        sections: dict[str, str] = {}
+        current_title = ""
+        current_lines: list[str] = []
+        heading_pattern = re.compile(r"^\s{0,3}#{1,4}\s+(.+?)\s*$")
+
+        for line in markdown_text.splitlines():
+            match = heading_pattern.match(line)
+            if match:
+                if current_title and current_lines:
+                    sections[current_title] = "\n".join(current_lines).strip()
+                current_title = match.group(1).strip()
+                current_lines = []
+            elif current_title:
+                current_lines.append(line)
+
+        if current_title and current_lines:
+            sections[current_title] = "\n".join(current_lines).strip()
+
+        return {key: value for key, value in sections.items() if key and value}
+    except Exception:
+        return {}
+
+
+def safe_parse_report_json(text: str) -> dict:
+    """Parse a JSON object from model output without breaking the Streamlit page."""
+    if not isinstance(text, str) or not text.strip():
+        return {}
+
+    def _loads_dict(candidate: str) -> dict:
+        try:
+            parsed = json.loads(candidate.strip())
+            return parsed if isinstance(parsed, dict) else {}
+        except Exception:
+            return {}
+
+    try:
+        fenced_blocks = re.findall(
+            r"```(?:json|JSON)?\s*(.*?)```",
+            text,
+            flags=re.DOTALL,
+        )
+        for block in fenced_blocks:
+            parsed = _loads_dict(block)
+            if parsed:
+                return parsed
+
+        parsed = _loads_dict(text)
+        if parsed:
+            return parsed
+
+        decoder = json.JSONDecoder()
+        for start_index, char in enumerate(text):
+            if char != "{":
+                continue
+            try:
+                parsed, _ = decoder.raw_decode(text[start_index:])
+                if isinstance(parsed, dict):
+                    return parsed
+            except Exception:
+                continue
+
+        return {}
+    except Exception:
+        return {}
+
+
 # ---------- Session state ----------
 
 def init_state() -> None:
@@ -175,6 +280,15 @@ def init_state() -> None:
     st.session_state.setdefault("project_description", "")
     st.session_state.setdefault("current_evidence", "")
     st.session_state.setdefault("funding_goal", "")
+    st.session_state.setdefault("flow_step", "dossier")
+    st.session_state.setdefault("founder_profile", {})
+    st.session_state.setdefault("questions_list", [])
+    st.session_state.setdefault("current_question_index", 0)
+    st.session_state.setdefault("answers_by_question", {})
+    st.session_state.setdefault("answer_mode", "single_box")
+    st.session_state.setdefault("report_sections", {})
+    st.session_state.setdefault("report_json", {})
+    st.session_state.setdefault("report_ready", False)
 
 
 # ---------- UI ----------
@@ -838,6 +952,20 @@ if generate_questions_clicked:
                 )
                 raw = call_model(prompt)
                 st.session_state.questions_markdown = raw
+                st.session_state.questions_list = parse_questions(raw)
+                st.session_state.current_question_index = 0
+                st.session_state.answers_by_question = {}
+                st.session_state.answer_mode = "single_box"
+                st.session_state.report_sections = {}
+                st.session_state.report_json = {}
+                st.session_state.report_ready = False
+                st.session_state.flow_step = "questions"
+                st.session_state.founder_profile = {
+                    "founder_background": st.session_state.founder_background,
+                    "project_description": st.session_state.project_description,
+                    "current_evidence": st.session_state.current_evidence,
+                    "funding_goal": st.session_state.funding_goal,
+                }
                 st.session_state.answers_text = ""
                 st.session_state.report_markdown = ""
                 st.session_state.pop("answers_textarea", None)
