@@ -207,7 +207,8 @@ st.markdown(
     }
 
     section.main > div {
-        padding-top: 1.2rem;
+        padding-top: 1.6rem;
+        padding-bottom: 2.2rem;
     }
 
     div[data-testid="stHeader"] {
@@ -244,6 +245,8 @@ st.markdown(
     }
 
     div[data-testid="stExpander"] {
+        margin-top: 0.25rem;
+        margin-bottom: 1.35rem;
         background: var(--vc-panel);
         border: 1px solid var(--vc-border);
         border-radius: 8px;
@@ -252,6 +255,8 @@ st.markdown(
 
     div[data-testid="stExpander"] summary {
         color: var(--vc-text);
+        font-size: 0.92rem;
+        font-weight: 650;
     }
 
     div[data-testid="stTextArea"] textarea,
@@ -326,69 +331,95 @@ st.markdown(
     }
 
     .vc-section {
-        margin: 0 0 1.1rem 0;
+        margin: 0;
+    }
+
+    .vc-section + .vc-section {
+        margin-top: 1.35rem;
+    }
+
+    .vc-page-sections {
+        margin-top: 1.55rem;
+        margin-bottom: 1.25rem;
     }
 
     .vc-section-title {
-        margin: 0 0 0.7rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        margin: 0 0 0.75rem 0;
         color: var(--vc-text);
-        font-size: 0.95rem;
+        font-size: 0.86rem;
         font-weight: 750;
-        letter-spacing: 0;
+        letter-spacing: 0.04em;
         text-transform: uppercase;
     }
 
+    .vc-section-title::before {
+        content: "";
+        width: 0.36rem;
+        height: 0.36rem;
+        border-radius: 999px;
+        background: var(--vc-accent-2);
+        box-shadow: 0 0 0 3px rgba(214, 179, 106, 0.11);
+    }
+
     .vc-hero {
-        margin: 0 0 1.15rem 0;
-        padding: 1.25rem 1.3rem 1.15rem 1.3rem;
-        border: 1px solid rgba(214, 179, 106, 0.22);
+        margin: 0 0 1.55rem 0;
+        padding: 1.75rem 1.9rem 1.65rem 1.9rem;
+        border: 1px solid rgba(214, 179, 106, 0.24);
         border-radius: 8px;
         background:
-            linear-gradient(180deg, rgba(214, 179, 106, 0.06), rgba(214, 179, 106, 0)),
-            linear-gradient(180deg, rgba(18, 34, 56, 0.98), rgba(12, 23, 40, 0.98));
-        box-shadow: 0 20px 44px rgba(0, 0, 0, 0.2);
+            linear-gradient(135deg, rgba(214, 179, 106, 0.09), rgba(79, 124, 255, 0.045) 44%, rgba(214, 179, 106, 0)),
+            linear-gradient(180deg, rgba(18, 34, 56, 0.99), rgba(10, 20, 35, 0.99));
+        box-shadow: 0 24px 54px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.03);
     }
 
     .vc-hero-title {
         margin: 0;
-        font-size: 2rem;
+        font-size: clamp(2.2rem, 4.2vw, 3.35rem);
         line-height: 1.05;
-        font-weight: 800;
+        font-weight: 820;
+        letter-spacing: 0;
     }
 
     .vc-hero-tagline {
-        margin: 0.35rem 0 0 0;
-        color: #dce5f5;
-        font-size: 0.98rem;
-        font-weight: 650;
+        margin: 0.55rem 0 0 0;
+        color: #e3ebf8;
+        font-size: 1.05rem;
+        font-weight: 680;
+        line-height: 1.35;
     }
 
     .vc-hero-description {
-        max-width: 52rem;
-        margin: 0.55rem 0 0 0;
+        max-width: 46rem;
+        margin: 0.7rem 0 0 0;
         color: var(--vc-muted);
-        font-size: 0.92rem;
-        line-height: 1.55;
+        font-size: 0.95rem;
+        line-height: 1.6;
     }
 
     .vc-badges {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.45rem;
-        margin-top: 0.8rem;
+        gap: 0.6rem;
+        margin-top: 1.15rem;
+        margin-bottom: 0.2rem;
     }
 
     .vc-badge {
         display: inline-flex;
         align-items: center;
-        min-height: 2rem;
-        padding: 0.22rem 0.65rem;
-        border: 1px solid rgba(79, 124, 255, 0.26);
+        min-height: 1.85rem;
+        padding: 0.18rem 0.7rem;
+        border: 1px solid rgba(214, 179, 106, 0.2);
         border-radius: 999px;
-        background: rgba(79, 124, 255, 0.08);
-        color: #dde7ff;
-        font-size: 0.76rem;
+        background: rgba(8, 17, 31, 0.34);
+        color: #dfe7f4;
+        font-size: 0.74rem;
         font-weight: 600;
+        line-height: 1.2;
+        white-space: nowrap;
     }
 
     .vc-grid {
@@ -441,12 +472,43 @@ st.markdown(
     }
 
     .vc-memo {
-        margin: 1.15rem 0;
+        margin: 1.35rem 0;
         border: 1px solid var(--vc-border);
         border-radius: 8px;
         background: linear-gradient(180deg, rgba(18, 34, 56, 0.96), rgba(15, 27, 45, 0.98));
         overflow: hidden;
         box-shadow: 0 18px 36px rgba(0, 0, 0, 0.18);
+    }
+
+    @media (max-width: 760px) {
+        section.main > div {
+            padding-top: 1rem;
+        }
+
+        .vc-hero {
+            padding: 1.35rem 1.05rem 1.25rem 1.05rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .vc-hero-title {
+            font-size: 2.15rem;
+        }
+
+        .vc-hero-tagline {
+            font-size: 0.98rem;
+        }
+
+        .vc-badges {
+            gap: 0.45rem;
+        }
+
+        .vc-badge {
+            white-space: normal;
+        }
+
+        .vc-page-sections {
+            margin-top: 1.2rem;
+        }
     }
 
     .vc-memo-header {
@@ -600,23 +662,25 @@ else:
 
 st.markdown(
     f"""
-    <div class="vc-section">
-        <div class="vc-section-title">{assessment_title}</div>
-        <div class="vc-grid">
-            <div class="vc-card">{assessment_items[0]}</div>
-            <div class="vc-card">{assessment_items[1]}</div>
-            <div class="vc-card">{assessment_items[2]}</div>
-            <div class="vc-card">{assessment_items[3]}</div>
-            <div class="vc-card">{assessment_items[4]}</div>
+    <div class="vc-page-sections">
+        <div class="vc-section">
+            <div class="vc-section-title">{assessment_title}</div>
+            <div class="vc-grid">
+                <div class="vc-card">{assessment_items[0]}</div>
+                <div class="vc-card">{assessment_items[1]}</div>
+                <div class="vc-card">{assessment_items[2]}</div>
+                <div class="vc-card">{assessment_items[3]}</div>
+                <div class="vc-card">{assessment_items[4]}</div>
+            </div>
         </div>
-    </div>
-    <div class="vc-section">
-        <div class="vc-section-title">{workflow_title}</div>
-        <div class="vc-step-grid">
-            <div class="vc-step"><span class="vc-step-index">Step 1</span>{workflow_steps[0]}</div>
-            <div class="vc-step"><span class="vc-step-index">Step 2</span>{workflow_steps[1]}</div>
-            <div class="vc-step"><span class="vc-step-index">Step 3</span>{workflow_steps[2]}</div>
-            <div class="vc-step"><span class="vc-step-index">Step 4</span>{workflow_steps[3]}</div>
+        <div class="vc-section">
+            <div class="vc-section-title">{workflow_title}</div>
+            <div class="vc-step-grid">
+                <div class="vc-step"><span class="vc-step-index">Step 1</span>{workflow_steps[0]}</div>
+                <div class="vc-step"><span class="vc-step-index">Step 2</span>{workflow_steps[1]}</div>
+                <div class="vc-step"><span class="vc-step-index">Step 3</span>{workflow_steps[2]}</div>
+                <div class="vc-step"><span class="vc-step-index">Step 4</span>{workflow_steps[3]}</div>
+            </div>
         </div>
     </div>
     """,
