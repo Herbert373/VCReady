@@ -93,6 +93,23 @@ TEXTS = {
         "field_funding_goal_short": "Funding or partnership goal",
         "dossier_empty_note": "Complete the dossier on the main page to unlock question generation.",
         "warn_build_dossier": "Please complete all four dossier fields before building the Founder Dossier.",
+        "guided_mode_title": "Guided Question Mode",
+        "question_card_title": "Question",
+        "question_card_hint": "Answer one investor question at a time. Your answers are saved per question.",
+        "single_answer_placeholder": "Write your answer to this question.",
+        "question_progress_label": "Question progress",
+        "answered_progress_label": "Answered",
+        "btn_previous_question": "Previous",
+        "btn_save_answer": "Save Answer",
+        "btn_next_question": "Next",
+        "btn_review_all_answers": "Review All Answers",
+        "btn_back_to_guided": "Back to Guided Mode",
+        "answer_saved_status": "Answer saved.",
+        "guided_fallback_notice": "Questions could not be split into guided cards, so the original Markdown view is shown.",
+        "review_placeholder_title": "Review All Answers",
+        "review_placeholder_body": "Review your answers before generating the Founder Reflection Report.",
+        "review_answer_placeholder": "Edit this answer before generating the report.",
+        "scaffold_expander_title": "How to think about this question",
         "footer": (
             "VCReady is an AI product prototype built for the founder's portfolio. "
             "It demonstrates founder narrative pressure-testing, prompt design, and prototype implementation. "
@@ -157,6 +174,23 @@ TEXTS = {
         "field_funding_goal_short": "融资或合作目标",
         "dossier_empty_note": "请在主页面完成创始人档案，以解锁问题生成。",
         "warn_build_dossier": "请先填写完整四个档案字段，再建立创始人档案。",
+        "guided_mode_title": "逐题引导模式",
+        "question_card_title": "问题",
+        "question_card_hint": "请一次回答一个投资人问题。每一题的回答会单独保存。",
+        "single_answer_placeholder": "请回答当前这一题。",
+        "question_progress_label": "问题进度",
+        "answered_progress_label": "已回答",
+        "btn_previous_question": "上一题",
+        "btn_save_answer": "保存答案",
+        "btn_next_question": "下一题",
+        "btn_review_all_answers": "查看全部回答",
+        "btn_back_to_guided": "返回逐题模式",
+        "answer_saved_status": "回答已保存。",
+        "guided_fallback_notice": "问题未能稳定拆分为逐题卡片，因此显示原始 Markdown 视图。",
+        "review_placeholder_title": "查看全部回答",
+        "review_placeholder_body": "请在生成创始人反思报告前复核全部回答。",
+        "review_answer_placeholder": "生成报告前可在这里修改这道题的回答。",
+        "scaffold_expander_title": "如何思考这个问题",
         "footer": (
             "VCReady 是作者作品集构建的 AI 产品原型，用于展示创始人叙事压力测试、Prompt 设计与原型实现能力。"
             "当前版本仅用于作品集展示，并非商业化产品或生产环境部署。"
@@ -352,6 +386,17 @@ def profile_is_complete(profile: dict) -> bool:
     return all(str(profile.get(key, "")).strip() for key in FOUNDER_PROFILE_FIELDS)
 
 
+def reset_guided_answer_widgets() -> None:
+    for key in list(st.session_state.keys()):
+        key_text = str(key)
+        if (
+            key_text.startswith("answer_q_")
+            or key_text.startswith("guided_answer_")
+            or key_text.startswith("review_answer_")
+        ):
+            st.session_state[key] = ""
+
+
 def reset_guided_session_state() -> None:
     st.session_state.founder_profile = {}
     st.session_state.questions_markdown = ""
@@ -371,6 +416,187 @@ def reset_guided_session_state() -> None:
     st.session_state.flow_step = "profile"
     if "answers_textarea" in st.session_state:
         st.session_state.answers_textarea = ""
+    reset_guided_answer_widgets()
+
+
+def sync_current_answer(question_index: int, answer_text: str) -> None:
+    if question_index < 0:
+        return
+    answers = dict(st.session_state.answers_by_question)
+    answers[question_index] = answer_text
+    st.session_state.answers_by_question = answers
+
+
+def sync_review_answers() -> None:
+    answers = dict(st.session_state.answers_by_question)
+    for index in range(len(st.session_state.questions_list)):
+        review_key = f"review_answer_{index}"
+        if review_key in st.session_state:
+            answers[index] = st.session_state[review_key]
+    st.session_state.answers_by_question = answers
+
+
+def build_review_answers_text() -> str:
+    blocks = []
+    for index, question in enumerate(st.session_state.questions_list):
+        answer = st.session_state.answers_by_question.get(index, "")
+        blocks.append(
+            f"Q{index + 1}: {question}\nA{index + 1}: {answer}".strip()
+        )
+    return "\n\n".join(blocks).strip()
+
+
+def get_answer_scaffold(question_text: str, language: str) -> list[str]:
+    text = question_text.lower()
+    keyword_groups = {
+        "competition_or_moat": (
+            "advantage", "moat", "compete", "competition", "competitor", "incumbent",
+            "defensible", "differentiation", "凭什么", "优势", "护城河", "竞争", "竞品",
+            "美团", "饿了么", "大厂", "壁垒",
+        ),
+        "founder_advantage": (
+            "founder-market", "founder market", "why you", "domain expertise",
+            "background", "unique insight", "founder advantage", "创始人", "为什么是你",
+            "背景", "经验", "洞察", "匹配",
+        ),
+        "problem_urgency": (
+            "urgent", "pain", "problem", "must-have", "why now", "priority",
+            "痛点", "紧迫", "刚需", "问题", "为什么现在", "优先级",
+        ),
+        "execution_evidence": (
+            "traction", "evidence", "pilot", "prototype", "loi", "user interview",
+            "execution", "验证", "证据", "试点", "原型", "访谈", "进展", "执行",
+        ),
+        "go_to_market": (
+            "go-to-market", "gtm", "distribution", "acquire", "customer acquisition",
+            "channel", "sales", "增长", "获客", "渠道", "销售", "推广", "市场进入",
+        ),
+        "funding_use": (
+            "funding", "capital", "raise", "use of funds", "milestone", "runway",
+            "融资", "资金", "募资", "钱怎么用", "里程碑", "跑道",
+        ),
+        "resilience_or_commitment": (
+            "resilience", "commitment", "persist", "failure", "setback", "risk",
+            "韧性", "承诺", "坚持", "失败", "挫折", "风险", "投入",
+        ),
+    }
+
+    scaffold_texts = {
+        "en": {
+            "founder_advantage": [
+                "Connect your background to the specific problem, not just to the industry.",
+                "Name the insight you have that an outsider would likely miss.",
+                "Show evidence that you can access users, partners, or data others cannot easily reach.",
+                "Explain why your team can learn faster or execute better in this niche.",
+            ],
+            "problem_urgency": [
+                "Describe who has the problem and when it becomes painful enough to act.",
+                "Separate nice-to-have pain from must-solve urgency.",
+                "Use concrete moments, costs, delays, or risks to show urgency.",
+                "Explain why the problem matters now rather than later.",
+            ],
+            "execution_evidence": [
+                "List the strongest proof you have already created.",
+                "Separate real user behavior from opinions or compliments.",
+                "Mention pilots, interviews, prototypes, LOIs, revenue, or repeat usage if available.",
+                "Be honest about what is not validated yet and what experiment comes next.",
+            ],
+            "competition_or_moat": [
+                "Acknowledge the incumbent's strengths instead of ignoring them.",
+                "Define the narrower wedge or user segment you are targeting.",
+                "Explain why larger players may not prioritize this specific use case.",
+                "Provide concrete evidence of user access, speed, insight, or execution.",
+                "If the advantage is unproven, state how you will test it next.",
+            ],
+            "go_to_market": [
+                "Start with the first reachable user segment, not the total market.",
+                "Explain the channel you can actually access now.",
+                "Show why the acquisition path is credible for your current stage.",
+                "Name the first conversion or retention signal you will measure.",
+            ],
+            "funding_use": [
+                "Tie the funding request to specific milestones.",
+                "Explain what risk the capital will reduce.",
+                "Separate product, hiring, validation, and go-to-market uses.",
+                "State what progress should be visible by the next financing point.",
+            ],
+            "resilience_or_commitment": [
+                "Name the hard part you expect rather than giving a generic commitment statement.",
+                "Use a specific example of persistence, recovery, or learning under pressure.",
+                "Explain what would make you change direction versus keep going.",
+                "Show that commitment is backed by behavior, not only intention.",
+            ],
+            "generic": [
+                "Answer the investor's underlying concern, not only the literal wording.",
+                "Use specific evidence before broad claims.",
+                "State the strongest assumption in your answer and how you will test it.",
+                "Be clear about what is proven, what is uncertain, and what comes next.",
+            ],
+        },
+        "zh": {
+            "founder_advantage": [
+                "把你的背景和这个具体问题连接起来，而不是只说行业相关。",
+                "说清楚你有哪些外部人不容易看到的洞察。",
+                "说明你是否能接触到别人难以触达的用户、伙伴或数据。",
+                "解释为什么你或团队能在这个细分场景里学得更快、执行得更好。",
+            ],
+            "problem_urgency": [
+                "说明谁有这个问题，以及什么时候痛到必须行动。",
+                "区分锦上添花的需求和必须解决的紧迫问题。",
+                "用具体成本、延误、风险或场景说明紧迫性。",
+                "解释为什么这个问题现在必须解决，而不是以后再解决。",
+            ],
+            "execution_evidence": [
+                "列出你已经拿到的最强验证证据。",
+                "区分真实用户行为和口头认可。",
+                "如果有试点、访谈、原型、意向书、收入或复用行为，要具体说明。",
+                "诚实说明哪些还没验证，以及下一步准备用什么实验验证。",
+            ],
+            "competition_or_moat": [
+                "先承认现有玩家或竞品的资源优势，不要假装它们不存在。",
+                "说明你切入的是哪个更窄、更具体的场景。",
+                "解释为什么大平台或成熟玩家暂时不会优先解决这个场景。",
+                "给出你更接近用户、更快验证或更能执行的具体证据。",
+                "如果优势还没验证，说明下一步准备用什么实验验证。",
+            ],
+            "go_to_market": [
+                "先说清楚最先能触达的用户群，而不是泛泛说整个市场。",
+                "解释你现在真正能使用的获客渠道。",
+                "说明这个获客路径为什么符合当前阶段。",
+                "指出第一批要验证的转化或留存信号。",
+            ],
+            "funding_use": [
+                "把融资需求和具体里程碑对应起来。",
+                "说明这笔资金要降低哪个关键风险。",
+                "区分产品、招聘、验证和市场进入等不同用途。",
+                "说明到下一轮融资前应该看到什么进展。",
+            ],
+            "resilience_or_commitment": [
+                "说出你预期最难的部分，而不是泛泛表态会坚持。",
+                "用一个具体例子说明你如何在压力下恢复、学习或推进。",
+                "说明什么情况下你会调整方向，什么情况下会继续坚持。",
+                "让投入和承诺体现在行为上，而不只是意愿上。",
+            ],
+            "generic": [
+                "回答投资人真正担心的问题，而不只是回应字面问题。",
+                "先给具体证据，再做概括判断。",
+                "说清楚你答案里最关键的假设，以及准备如何验证。",
+                "区分已经证明的事、仍不确定的事和下一步行动。",
+            ],
+        },
+    }
+
+    matched_type = "generic"
+    for scaffold_type, keywords in keyword_groups.items():
+        if any(keyword in text for keyword in keywords):
+            matched_type = scaffold_type
+            break
+
+    safe_language = language if language in scaffold_texts else "en"
+    return scaffold_texts[safe_language].get(
+        matched_type,
+        scaffold_texts[safe_language]["generic"],
+    )
 
 
 # ---------- UI ----------
@@ -1152,15 +1378,19 @@ if generate_questions_clicked:
                     language_instruction=t["language_instruction"],
                 )
                 raw = call_model(prompt)
+                parsed_questions = parse_questions(raw)
                 st.session_state.questions_markdown = raw
-                st.session_state.questions_list = parse_questions(raw)
+                st.session_state.questions_list = parsed_questions
                 st.session_state.current_question_index = 0
                 st.session_state.answers_by_question = {}
+                reset_guided_answer_widgets()
                 st.session_state.answer_mode = "guided"
                 st.session_state.report_sections = {}
                 st.session_state.report_json = {}
                 st.session_state.report_ready = False
-                st.session_state.flow_step = "dossier_ready"
+                st.session_state.flow_step = (
+                    "guided_answer" if parsed_questions else "questions_fallback"
+                )
                 st.session_state.answers_text = ""
                 st.session_state.report_markdown = ""
                 st.session_state.pop("answers_textarea", None)
@@ -1170,7 +1400,152 @@ if generate_questions_clicked:
 
 # ---------- Step 2: display questions, collect answers ----------
 
-if st.session_state.questions_markdown:
+if st.session_state.flow_step == "guided_answer" and st.session_state.questions_list:
+    question_count = len(st.session_state.questions_list)
+    current_index = min(
+        max(st.session_state.current_question_index, 0),
+        question_count - 1,
+    )
+    st.session_state.current_question_index = current_index
+    current_question = st.session_state.questions_list[current_index]
+    current_answer_key = f"guided_answer_{current_index}"
+    if current_answer_key not in st.session_state:
+        st.session_state[current_answer_key] = st.session_state.answers_by_question.get(
+            current_index,
+            "",
+        )
+    answered_count = sum(
+        1 for answer in st.session_state.answers_by_question.values() if str(answer).strip()
+    )
+
+    st.markdown(
+        f"""
+        <div class="vc-memo">
+            <div class="vc-memo-header">
+                <p class="vc-memo-kicker">GUIDED MODE</p>
+                <h3 class="vc-memo-title">{t["guided_mode_title"]}</h3>
+                <p class="vc-memo-subtitle">{t["question_card_hint"]}</p>
+            </div>
+            <div class="vc-memo-divider"></div>
+            <div class="vc-memo-body">
+                <p class="vc-memo-kicker">{t["question_progress_label"]}: {current_index + 1} / {question_count}</p>
+                <h3 class="vc-memo-title">{t["question_card_title"]} {current_index + 1}</h3>
+                <p class="vc-memo-subtitle">{current_question}</p>
+                <p class="vc-memo-subtitle">{t["answered_progress_label"]}: {answered_count} / {question_count}</p>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    with st.expander(t["scaffold_expander_title"], expanded=False):
+        for scaffold_item in get_answer_scaffold(current_question, language):
+            st.markdown(f"- {scaffold_item}")
+
+    current_answer = st.text_area(
+        t["answers_label"],
+        key=current_answer_key,
+        height=240,
+        placeholder=t["single_answer_placeholder"],
+    )
+
+    nav_cols = st.columns([1, 1, 1, 1])
+    with nav_cols[0]:
+        if current_index > 0 and st.button(t["btn_previous_question"], use_container_width=True):
+            sync_current_answer(current_index, current_answer)
+            st.session_state.current_question_index = current_index - 1
+            st.rerun()
+    with nav_cols[1]:
+        if st.button(t["btn_save_answer"], use_container_width=True):
+            sync_current_answer(current_index, current_answer)
+            st.success(t["answer_saved_status"])
+    with nav_cols[2]:
+        if current_index < question_count - 1 and st.button(t["btn_next_question"], use_container_width=True):
+            sync_current_answer(current_index, current_answer)
+            st.session_state.current_question_index = current_index + 1
+            st.rerun()
+    with nav_cols[3]:
+        if st.button(t["btn_review_all_answers"], type="primary", use_container_width=True):
+            sync_current_answer(current_index, current_answer)
+            st.session_state.flow_step = "review_all"
+            st.rerun()
+
+elif st.session_state.flow_step == "review_all":
+    sync_review_answers()
+    st.markdown(
+        f"""
+        <div class="vc-memo">
+            <div class="vc-memo-header">
+                <p class="vc-memo-kicker">REVIEW</p>
+                <h3 class="vc-memo-title">{t["review_placeholder_title"]}</h3>
+                <p class="vc-memo-subtitle">{t["review_placeholder_body"]}</p>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    for index, question in enumerate(st.session_state.questions_list):
+        review_key = f"review_answer_{index}"
+        if review_key not in st.session_state:
+            st.session_state[review_key] = st.session_state.answers_by_question.get(index, "")
+        st.markdown(
+            f"""
+            <div class="vc-memo">
+                <div class="vc-memo-header" style="padding: 0.7rem 1rem 0.55rem 1rem;">
+                    <p class="vc-memo-kicker">{t["question_card_title"]} {index + 1}</p>
+                    <p class="vc-memo-subtitle">{question}</p>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.text_area(
+            t["answers_label"],
+            key=review_key,
+            height=180,
+            placeholder=t["review_answer_placeholder"],
+        )
+
+    review_cols = st.columns([1, 1])
+    with review_cols[0]:
+        if st.button(t["btn_back_to_guided"], use_container_width=True):
+            sync_review_answers()
+            st.session_state.flow_step = "guided_answer"
+            st.rerun()
+    with review_cols[1]:
+        if st.button(t["btn_report"], type="primary", use_container_width=True):
+            sync_review_answers()
+            st.session_state.answers_text = build_review_answers_text()
+            if not st.session_state.answers_text.strip():
+                st.warning(t["warn_write_answers"])
+            else:
+                with st.spinner(t["spinner_report"]):
+                    try:
+                        qa_transcript = (
+                            "Questions:\n"
+                            f"{st.session_state.questions_markdown}\n\n"
+                            "Founder's answers:\n"
+                            f"{st.session_state.answers_text}"
+                        )
+                        report_template = REPORT_PROMPT_EN if language == "en" else REPORT_PROMPT_ZH
+                        prompt = report_template.format(
+                            founder_background=st.session_state.founder_background,
+                            project_description=st.session_state.project_description,
+                            current_evidence=st.session_state.current_evidence,
+                            funding_goal=st.session_state.funding_goal,
+                            qa_transcript=qa_transcript,
+                        )
+                        report_text = call_model(prompt)
+                        st.session_state.report_markdown = report_text
+                        st.session_state.report_json = safe_parse_report_json(report_text)
+                        st.session_state.report_sections = parse_report_markdown_sections(report_text)
+                        st.session_state.report_ready = True
+                        st.session_state.flow_step = "report_ready"
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"{t['err_report']}{e}")
+
+elif st.session_state.flow_step == "questions_fallback" and st.session_state.questions_markdown:
+    st.warning(t["guided_fallback_notice"])
     st.markdown(
         f"""
         <div class="vc-memo">
@@ -1228,13 +1603,14 @@ if st.session_state.questions_markdown:
                         qa_transcript=qa_transcript,
                     )
                     st.session_state.report_markdown = call_model(prompt)
+                    st.session_state.flow_step = "report_ready"
                 except Exception as e:
                     st.error(f"{t['err_report']}{e}")
 
 
 # ---------- Step 3: render report + download ----------
 
-if st.session_state.report_markdown:
+if st.session_state.flow_step == "report_ready" and st.session_state.report_markdown:
     st.markdown(
         f"""
         <div class="vc-memo vc-report-shell">
