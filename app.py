@@ -574,6 +574,96 @@ st.markdown(
         box-shadow: none;
     }
 
+    .vc-report-shell {
+        margin-top: 1.55rem;
+        border-color: rgba(214, 179, 106, 0.24);
+        box-shadow: 0 22px 42px rgba(0, 0, 0, 0.22);
+    }
+
+    .vc-report-shell .vc-memo-header {
+        padding: 1.15rem 1.15rem 0.95rem 1.15rem;
+    }
+
+    .vc-report-shell .vc-memo-title {
+        font-size: 1.12rem;
+        font-weight: 760;
+    }
+
+    .vc-report-body {
+        padding: 1.15rem 1.15rem 1.2rem 1.15rem;
+        background: rgba(8, 17, 31, 0.18);
+    }
+
+    .vc-report-body > div[data-testid="stMarkdownContainer"] {
+        max-width: 50rem;
+    }
+
+    .vc-report-body h1,
+    .vc-report-body h2,
+    .vc-report-body h3,
+    .vc-report-body h4 {
+        margin: 1.1rem 0 0.55rem 0;
+        color: #f2f5fa;
+        line-height: 1.28;
+        letter-spacing: 0;
+    }
+
+    .vc-report-body h1:first-child,
+    .vc-report-body h2:first-child,
+    .vc-report-body h3:first-child,
+    .vc-report-body h4:first-child {
+        margin-top: 0;
+    }
+
+    .vc-report-body h1,
+    .vc-report-body h2 {
+        font-size: 1.03rem;
+        font-weight: 760;
+    }
+
+    .vc-report-body h3,
+    .vc-report-body h4 {
+        font-size: 0.95rem;
+        font-weight: 720;
+        color: #e7edf7;
+    }
+
+    .vc-report-body p {
+        margin: 0.45rem 0 0.82rem 0;
+        color: #d9e0eb;
+        font-size: 0.93rem;
+        line-height: 1.72;
+    }
+
+    .vc-report-body ul,
+    .vc-report-body ol {
+        margin: 0.35rem 0 1rem 1.15rem;
+        padding: 0;
+    }
+
+    .vc-report-body li {
+        margin: 0 0 0.5rem 0;
+        color: #dee5ef;
+        font-size: 0.92rem;
+        line-height: 1.66;
+        padding-left: 0.08rem;
+    }
+
+    .vc-report-body li::marker {
+        color: var(--vc-accent-2);
+    }
+
+    .vc-report-body strong {
+        color: #f7f1e4;
+        font-weight: 720;
+    }
+
+    .vc-report-body hr {
+        margin: 1rem 0 1.05rem 0;
+        border: 0;
+        border-top: 1px solid rgba(34, 50, 74, 0.95);
+    }
+
     hr, div[data-testid="stDivider"] {
         border-color: var(--vc-border);
     }
@@ -824,13 +914,13 @@ if st.session_state.questions_markdown:
 if st.session_state.report_markdown:
     st.markdown(
         f"""
-        <div class="vc-memo">
+        <div class="vc-memo vc-report-shell">
             <div class="vc-memo-header">
                 <p class="vc-memo-kicker">REFLECTION REPORT</p>
                 <h3 class="vc-memo-title">{t["report_subheader"]}</h3>
             </div>
             <div class="vc-memo-divider"></div>
-            <div class="vc-memo-body">
+            <div class="vc-memo-body vc-report-body">
         """,
         unsafe_allow_html=True,
     )
