@@ -73,6 +73,26 @@ TEXTS = {
         "err_report": "Failed to generate report: ",
         "report_subheader": "Founder Reflection Report",
         "btn_download": "Download Report (.txt)",
+        "dossier_card_title": "Build Founder Dossier",
+        "dossier_card_subtitle": "Set up the founder profile before generating VC pressure-test questions.",
+        "dossier_ready_title": "Founder Profile Ready",
+        "dossier_ready_body": "Your dossier is ready. Generate VC pressure-test questions when you are ready to start the assessment.",
+        "btn_build_dossier": "Build Founder Dossier",
+        "btn_edit_dossier": "Edit Dossier",
+        "btn_new_session": "Start New Session",
+        "profile_summary_title": "Founder Profile Summary",
+        "profile_status_label": "Session status",
+        "profile_status_empty": "Dossier not built",
+        "profile_status_ready": "Dossier ready",
+        "profile_completeness_label": "Completeness",
+        "profile_field_complete": "Complete",
+        "profile_field_missing": "Missing",
+        "field_founder_background_short": "Founder background",
+        "field_project_description_short": "Project description",
+        "field_current_evidence_short": "Current evidence",
+        "field_funding_goal_short": "Funding or partnership goal",
+        "dossier_empty_note": "Complete the dossier on the main page to unlock question generation.",
+        "warn_build_dossier": "Please complete all four dossier fields before building the Founder Dossier.",
         "footer": (
             "VCReady is an AI product prototype built for the founder's portfolio. "
             "It demonstrates founder narrative pressure-testing, prompt design, and prototype implementation. "
@@ -117,6 +137,26 @@ TEXTS = {
         "err_report": "生成报告失败：",
         "report_subheader": "创始人反思报告",
         "btn_download": "下载报告 (.txt)",
+        "dossier_card_title": "建立创始人档案",
+        "dossier_card_subtitle": "请先完成创始人档案，再生成 VC 压力测试问题。",
+        "dossier_ready_title": "创始人档案已就绪",
+        "dossier_ready_body": "档案已完成。准备好后，可以生成 VC 压力测试问题并开始评估。",
+        "btn_build_dossier": "建立创始人档案",
+        "btn_edit_dossier": "编辑档案",
+        "btn_new_session": "开始新会话",
+        "profile_summary_title": "创始人档案摘要",
+        "profile_status_label": "会话状态",
+        "profile_status_empty": "档案未建立",
+        "profile_status_ready": "档案已就绪",
+        "profile_completeness_label": "完整度",
+        "profile_field_complete": "已完成",
+        "profile_field_missing": "未填写",
+        "field_founder_background_short": "创始人背景",
+        "field_project_description_short": "项目简介",
+        "field_current_evidence_short": "当前证据",
+        "field_funding_goal_short": "融资或合作目标",
+        "dossier_empty_note": "请在主页面完成创始人档案，以解锁问题生成。",
+        "warn_build_dossier": "请先填写完整四个档案字段，再建立创始人档案。",
         "footer": (
             "VCReady 是作者作品集构建的 AI 产品原型，用于展示创始人叙事压力测试、Prompt 设计与原型实现能力。"
             "当前版本仅用于作品集展示，并非商业化产品或生产环境部署。"
@@ -280,15 +320,57 @@ def init_state() -> None:
     st.session_state.setdefault("project_description", "")
     st.session_state.setdefault("current_evidence", "")
     st.session_state.setdefault("funding_goal", "")
-    st.session_state.setdefault("flow_step", "dossier")
+    st.session_state.setdefault("flow_step", "profile")
     st.session_state.setdefault("founder_profile", {})
     st.session_state.setdefault("questions_list", [])
     st.session_state.setdefault("current_question_index", 0)
     st.session_state.setdefault("answers_by_question", {})
-    st.session_state.setdefault("answer_mode", "single_box")
+    st.session_state.setdefault("answer_mode", "guided")
     st.session_state.setdefault("report_sections", {})
     st.session_state.setdefault("report_json", {})
     st.session_state.setdefault("report_ready", False)
+    if st.session_state.flow_step == "dossier":
+        st.session_state.flow_step = "profile"
+
+
+FOUNDER_PROFILE_FIELDS = (
+    "founder_background",
+    "project_description",
+    "current_evidence",
+    "funding_goal",
+)
+
+
+def current_founder_profile() -> dict:
+    return {
+        key: st.session_state.get(key, "")
+        for key in FOUNDER_PROFILE_FIELDS
+    }
+
+
+def profile_is_complete(profile: dict) -> bool:
+    return all(str(profile.get(key, "")).strip() for key in FOUNDER_PROFILE_FIELDS)
+
+
+def reset_guided_session_state() -> None:
+    st.session_state.founder_profile = {}
+    st.session_state.questions_markdown = ""
+    st.session_state.questions_list = []
+    st.session_state.current_question_index = 0
+    st.session_state.answers_by_question = {}
+    st.session_state.answer_mode = "guided"
+    st.session_state.answers_text = ""
+    st.session_state.report_markdown = ""
+    st.session_state.report_sections = {}
+    st.session_state.report_json = {}
+    st.session_state.report_ready = False
+    st.session_state.founder_background = ""
+    st.session_state.project_description = ""
+    st.session_state.current_evidence = ""
+    st.session_state.funding_goal = ""
+    st.session_state.flow_step = "profile"
+    if "answers_textarea" in st.session_state:
+        st.session_state.answers_textarea = ""
 
 
 # ---------- UI ----------
@@ -688,6 +770,36 @@ st.markdown(
         box-shadow: none;
     }
 
+    .vc-dossier-shell {
+        margin: 1.35rem 0;
+        border-color: rgba(214, 179, 106, 0.22);
+    }
+
+    .vc-dossier-body {
+        padding: 1rem 1.05rem 1.05rem 1.05rem;
+    }
+
+    .vc-profile-status {
+        margin: 0.8rem 0 0.9rem 0;
+        padding: 0.75rem 0.8rem;
+        border: 1px solid var(--vc-border);
+        border-radius: 8px;
+        background: rgba(8, 17, 31, 0.28);
+    }
+
+    .vc-profile-status-label {
+        margin: 0 0 0.25rem 0;
+        color: var(--vc-muted);
+        font-size: 0.75rem;
+    }
+
+    .vc-profile-status-value {
+        margin: 0;
+        color: var(--vc-text);
+        font-size: 0.9rem;
+        font-weight: 700;
+    }
+
     .vc-report-shell {
         margin-top: 1.55rem;
         border-color: rgba(214, 179, 106, 0.24);
@@ -895,17 +1007,79 @@ with st.expander(t["how_it_works_title"], expanded=False):
     st.markdown(t["how_it_works_body"])
 
 
-# ---------- Sidebar: founder inputs ----------
+# ---------- Founder Dossier setup ----------
 
 def inputs_ready() -> bool:
-    return all(
-        st.session_state[k].strip()
-        for k in ("founder_background", "project_description", "current_evidence", "funding_goal")
-    )
+    return profile_is_complete(current_founder_profile())
+
+
+profile_field_labels = {
+    "founder_background": t["field_founder_background_short"],
+    "project_description": t["field_project_description_short"],
+    "current_evidence": t["field_current_evidence_short"],
+    "funding_goal": t["field_funding_goal_short"],
+}
+
+sidebar_profile = (
+    st.session_state.founder_profile
+    if st.session_state.founder_profile
+    else current_founder_profile()
+)
+completed_fields = sum(
+    1 for key in FOUNDER_PROFILE_FIELDS if str(sidebar_profile.get(key, "")).strip()
+)
+profile_ready = profile_is_complete(st.session_state.founder_profile)
 
 
 with st.sidebar:
-    st.header(t["sidebar_header"])
+    st.header(t["profile_summary_title"])
+    status_text = t["profile_status_ready"] if profile_ready else t["profile_status_empty"]
+    st.markdown(
+        f"""
+        <div class="vc-profile-status">
+            <p class="vc-profile-status-label">{t["profile_status_label"]}</p>
+            <p class="vc-profile-status-value">{status_text}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.caption(f"{t['profile_completeness_label']}: {completed_fields}/4")
+    if not profile_ready:
+        st.caption(t["dossier_empty_note"])
+    else:
+        for field_key in FOUNDER_PROFILE_FIELDS:
+            field_status = (
+                t["profile_field_complete"]
+                if str(sidebar_profile.get(field_key, "")).strip()
+                else t["profile_field_missing"]
+            )
+            st.caption(f"{profile_field_labels[field_key]}: {field_status}")
+
+    if st.button(t["btn_edit_dossier"], use_container_width=True):
+        st.session_state.flow_step = "profile"
+        st.rerun()
+
+    if st.button(t["btn_new_session"], use_container_width=True):
+        reset_guided_session_state()
+        st.rerun()
+
+
+generate_questions_clicked = False
+
+if st.session_state.flow_step == "profile":
+    st.markdown(
+        f"""
+        <div class="vc-memo vc-dossier-shell">
+            <div class="vc-memo-header">
+                <p class="vc-memo-kicker">FOUNDER DOSSIER</p>
+                <h3 class="vc-memo-title">{t["dossier_card_title"]}</h3>
+                <p class="vc-memo-subtitle">{t["dossier_card_subtitle"]}</p>
+            </div>
+            <div class="vc-memo-divider"></div>
+            <div class="vc-dossier-body">
+        """,
+        unsafe_allow_html=True,
+    )
     st.session_state.founder_background = st.text_area(
         t["founder_bg_label"],
         value=st.session_state.founder_background,
@@ -930,6 +1104,32 @@ with st.sidebar:
         height=100,
         placeholder=t["goal_placeholder"],
     )
+    build_dossier_clicked = st.button(
+        t["btn_build_dossier"], type="primary", use_container_width=True
+    )
+    st.markdown("</div></div>", unsafe_allow_html=True)
+
+    if build_dossier_clicked:
+        if not inputs_ready():
+            st.warning(t["warn_build_dossier"])
+        else:
+            st.session_state.founder_profile = current_founder_profile()
+            st.session_state.flow_step = "dossier_ready"
+            st.rerun()
+
+elif st.session_state.flow_step == "dossier_ready":
+    st.markdown(
+        f"""
+        <div class="vc-memo vc-dossier-shell">
+            <div class="vc-memo-header">
+                <p class="vc-memo-kicker">FOUNDER DOSSIER</p>
+                <h3 class="vc-memo-title">{t["dossier_ready_title"]}</h3>
+                <p class="vc-memo-subtitle">{t["dossier_ready_body"]}</p>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     generate_questions_clicked = st.button(
         t["btn_questions"], type="primary", use_container_width=True
     )
@@ -938,16 +1138,17 @@ with st.sidebar:
 # ---------- Step 1: generate questions ----------
 
 if generate_questions_clicked:
-    if not inputs_ready():
+    if not profile_is_complete(st.session_state.founder_profile):
         st.warning(t["warn_fill_fields"])
     else:
         with st.spinner(t["spinner_questions"]):
             try:
+                profile = st.session_state.founder_profile
                 prompt = QUESTION_PROMPT.format(
-                    founder_background=st.session_state.founder_background,
-                    project_description=st.session_state.project_description,
-                    current_evidence=st.session_state.current_evidence,
-                    funding_goal=st.session_state.funding_goal,
+                    founder_background=profile["founder_background"],
+                    project_description=profile["project_description"],
+                    current_evidence=profile["current_evidence"],
+                    funding_goal=profile["funding_goal"],
                     language_instruction=t["language_instruction"],
                 )
                 raw = call_model(prompt)
@@ -955,17 +1156,11 @@ if generate_questions_clicked:
                 st.session_state.questions_list = parse_questions(raw)
                 st.session_state.current_question_index = 0
                 st.session_state.answers_by_question = {}
-                st.session_state.answer_mode = "single_box"
+                st.session_state.answer_mode = "guided"
                 st.session_state.report_sections = {}
                 st.session_state.report_json = {}
                 st.session_state.report_ready = False
-                st.session_state.flow_step = "questions"
-                st.session_state.founder_profile = {
-                    "founder_background": st.session_state.founder_background,
-                    "project_description": st.session_state.project_description,
-                    "current_evidence": st.session_state.current_evidence,
-                    "funding_goal": st.session_state.funding_goal,
-                }
+                st.session_state.flow_step = "dossier_ready"
                 st.session_state.answers_text = ""
                 st.session_state.report_markdown = ""
                 st.session_state.pop("answers_textarea", None)
