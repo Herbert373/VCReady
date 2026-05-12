@@ -83,6 +83,7 @@ TEXTS = {
         "btn_edit_dossier": "Edit Dossier",
         "btn_new_session": "Start New Session",
         "profile_summary_title": "Founder Profile Summary",
+        "assessment_context_title": "Assessment Context",
         "profile_status_label": "Session status",
         "profile_status_empty": "Dossier not built",
         "profile_status_ready": "Dossier ready",
@@ -93,6 +94,38 @@ TEXTS = {
         "field_project_description_short": "Project description",
         "field_current_evidence_short": "Current evidence",
         "field_funding_goal_short": "Funding or partnership goal",
+        "project_sector_label": "Project sector",
+        "current_stage_label": "Current stage",
+        "evaluation_goal_label": "Evaluation goal",
+        "commercialization_horizon_label": "Commercialization horizon",
+        "context_not_set": "Not set",
+        "sector_consumer": "Consumer",
+        "sector_saas_enterprise": "SaaS / Enterprise Software",
+        "sector_marketplace": "Marketplace",
+        "sector_hardware": "Hardware",
+        "sector_deeptech": "DeepTech",
+        "sector_embodied_ai_robotics": "Embodied AI / Robotics",
+        "sector_biotech_healthcare": "Biotech / Healthcare",
+        "sector_fintech": "FinTech",
+        "sector_other": "Other",
+        "stage_idea": "Idea",
+        "stage_prototype": "Prototype",
+        "stage_pilot": "Pilot",
+        "stage_pre_seed": "Pre-seed",
+        "stage_seed": "Seed",
+        "stage_revenue_stage": "Revenue stage",
+        "goal_founder_self_diagnosis": "Founder self-diagnosis",
+        "goal_investor_meeting_preparation": "Investor meeting preparation",
+        "goal_pitch_deck_improvement": "Pitch deck improvement",
+        "goal_mentor_feedback": "Mentor feedback",
+        "goal_pilot_customer_preparation": "Pilot customer preparation",
+        "goal_application_portfolio_demo": "Application portfolio demo",
+        "goal_other": "Other",
+        "horizon_immediate_revenue_expected": "Immediate revenue expected",
+        "horizon_six_to_twelve_months": "6-12 months",
+        "horizon_twelve_to_twenty_four_months": "12-24 months",
+        "horizon_long_cycle_pre_commercial": "Long-cycle / pre-commercial",
+        "horizon_research_to_market_uncertain": "Research-to-market uncertain",
         "dossier_empty_note": "Complete the dossier on the main page to unlock question generation.",
         "warn_build_dossier": "Please complete all four dossier fields before building the Founder Dossier.",
         "guided_mode_title": "Guided Question Mode",
@@ -171,6 +204,7 @@ TEXTS = {
         "btn_edit_dossier": "编辑档案",
         "btn_new_session": "开始新会话",
         "profile_summary_title": "创始人档案摘要",
+        "assessment_context_title": "评估上下文",
         "profile_status_label": "会话状态",
         "profile_status_empty": "档案未建立",
         "profile_status_ready": "档案已就绪",
@@ -181,6 +215,38 @@ TEXTS = {
         "field_project_description_short": "项目简介",
         "field_current_evidence_short": "当前证据",
         "field_funding_goal_short": "融资或合作目标",
+        "project_sector_label": "项目类型",
+        "current_stage_label": "当前阶段",
+        "evaluation_goal_label": "评估目标",
+        "commercialization_horizon_label": "商业化周期",
+        "context_not_set": "未设置",
+        "sector_consumer": "Consumer",
+        "sector_saas_enterprise": "SaaS / Enterprise Software",
+        "sector_marketplace": "Marketplace",
+        "sector_hardware": "Hardware",
+        "sector_deeptech": "DeepTech",
+        "sector_embodied_ai_robotics": "Embodied AI / Robotics",
+        "sector_biotech_healthcare": "Biotech / Healthcare",
+        "sector_fintech": "FinTech",
+        "sector_other": "Other",
+        "stage_idea": "Idea",
+        "stage_prototype": "Prototype",
+        "stage_pilot": "Pilot",
+        "stage_pre_seed": "Pre-seed",
+        "stage_seed": "Seed",
+        "stage_revenue_stage": "Revenue stage",
+        "goal_founder_self_diagnosis": "Founder self-diagnosis",
+        "goal_investor_meeting_preparation": "Investor meeting preparation",
+        "goal_pitch_deck_improvement": "Pitch deck improvement",
+        "goal_mentor_feedback": "Mentor feedback",
+        "goal_pilot_customer_preparation": "Pilot customer preparation",
+        "goal_application_portfolio_demo": "Application portfolio demo",
+        "goal_other": "Other",
+        "horizon_immediate_revenue_expected": "Immediate revenue expected",
+        "horizon_six_to_twelve_months": "6-12 months",
+        "horizon_twelve_to_twenty_four_months": "12-24 months",
+        "horizon_long_cycle_pre_commercial": "Long-cycle / pre-commercial",
+        "horizon_research_to_market_uncertain": "Research-to-market uncertain",
         "dossier_empty_note": "请在主页面完成创始人档案，以解锁问题生成。",
         "warn_build_dossier": "请先填写完整四个档案字段，再建立创始人档案。",
         "guided_mode_title": "逐题引导模式",
@@ -669,6 +735,15 @@ def init_state() -> None:
     st.session_state.setdefault("current_question_index", 0)
     st.session_state.setdefault("answers_by_question", {})
     st.session_state.setdefault("answer_mode", "guided")
+    st.session_state.setdefault(
+        "assessment_context",
+        {
+            "project_sector": "",
+            "current_stage": "",
+            "evaluation_goal": "",
+            "commercialization_horizon": "",
+        },
+    )
     st.session_state.setdefault("report_sections", {})
     st.session_state.setdefault("report_json", {})
     st.session_state.setdefault("report_ready", False)
@@ -685,12 +760,80 @@ FOUNDER_PROFILE_FIELDS = (
     "funding_goal",
 )
 
+ASSESSMENT_CONTEXT_FIELDS = (
+    "project_sector",
+    "current_stage",
+    "evaluation_goal",
+    "commercialization_horizon",
+)
+
+ASSESSMENT_CONTEXT_OPTIONS = {
+    "project_sector": [
+        {"value": "consumer", "label": {"en": "Consumer", "zh": "消费产品"}},
+        {"value": "saas_enterprise", "label": {"en": "SaaS / Enterprise Software", "zh": "SaaS / 企业软件"}},
+        {"value": "marketplace", "label": {"en": "Marketplace", "zh": "平台 / 双边市场"}},
+        {"value": "hardware", "label": {"en": "Hardware", "zh": "硬件"}},
+        {"value": "deeptech", "label": {"en": "DeepTech", "zh": "深科技"}},
+        {"value": "embodied_ai_robotics", "label": {"en": "Embodied AI / Robotics", "zh": "具身智能 / 机器人"}},
+        {"value": "biotech_healthcare", "label": {"en": "Biotech / Healthcare", "zh": "生物科技 / 医疗健康"}},
+        {"value": "fintech", "label": {"en": "FinTech", "zh": "金融科技"}},
+        {"value": "other", "label": {"en": "Other", "zh": "其他"}},
+    ],
+    "current_stage": [
+        {"value": "idea", "label": {"en": "Idea", "zh": "想法阶段"}},
+        {"value": "prototype", "label": {"en": "Prototype", "zh": "原型阶段"}},
+        {"value": "pilot", "label": {"en": "Pilot", "zh": "试点阶段"}},
+        {"value": "pre_seed", "label": {"en": "Pre-seed", "zh": "Pre-seed 阶段"}},
+        {"value": "seed", "label": {"en": "Seed", "zh": "Seed 阶段"}},
+        {"value": "revenue_stage", "label": {"en": "Revenue stage", "zh": "收入阶段"}},
+    ],
+    "evaluation_goal": [
+        {"value": "founder_self_diagnosis", "label": {"en": "Founder self-diagnosis", "zh": "创始人自我诊断"}},
+        {"value": "investor_meeting_preparation", "label": {"en": "Investor meeting preparation", "zh": "投资人面谈准备"}},
+        {"value": "pitch_deck_improvement", "label": {"en": "Pitch deck improvement", "zh": "商业计划书改进"}},
+        {"value": "mentor_feedback", "label": {"en": "Mentor feedback", "zh": "导师反馈"}},
+        {"value": "pilot_customer_preparation", "label": {"en": "Pilot customer preparation", "zh": "试点客户准备"}},
+        {"value": "application_portfolio_demo", "label": {"en": "Application portfolio demo", "zh": "申请作品集展示"}},
+        {"value": "other", "label": {"en": "Other", "zh": "其他"}},
+    ],
+    "commercialization_horizon": [
+        {"value": "immediate_revenue_expected", "label": {"en": "Immediate revenue expected", "zh": "预计立即产生收入"}},
+        {"value": "six_to_twelve_months", "label": {"en": "6-12 months", "zh": "6-12 个月"}},
+        {"value": "twelve_to_twenty_four_months", "label": {"en": "12-24 months", "zh": "12-24 个月"}},
+        {"value": "long_cycle_pre_commercial", "label": {"en": "Long-cycle / pre-commercial", "zh": "长周期 / 商业化前"}},
+        {"value": "research_to_market_uncertain", "label": {"en": "Research-to-market uncertain", "zh": "科研转商业路径不确定"}},
+    ],
+}
+
 
 def current_founder_profile() -> dict:
     return {
         key: st.session_state.get(key, "")
         for key in FOUNDER_PROFILE_FIELDS
     }
+
+
+def current_assessment_context() -> dict:
+    stored_context = st.session_state.get("assessment_context", {})
+    return {
+        key: str(stored_context.get(key, "")).strip()
+        for key in ASSESSMENT_CONTEXT_FIELDS
+    }
+
+
+def assessment_context_option_values(field_key: str) -> list[str]:
+    return [
+        option["value"]
+        for option in ASSESSMENT_CONTEXT_OPTIONS.get(field_key, [])
+    ]
+
+
+def assessment_context_label(field_key: str, value: str, language: str) -> str:
+    safe_language = language if language in ("en", "zh") else "en"
+    for option in ASSESSMENT_CONTEXT_OPTIONS.get(field_key, []):
+        if option["value"] == value:
+            return option["label"].get(safe_language, option["label"]["en"])
+    return value
 
 
 def profile_is_complete(profile: dict) -> bool:
@@ -716,6 +859,12 @@ def reset_guided_session_state() -> None:
     st.session_state.answers_by_question = {}
     st.session_state.answer_mode = "guided"
     st.session_state.answers_text = ""
+    st.session_state.assessment_context = {
+        "project_sector": "",
+        "current_stage": "",
+        "evaluation_goal": "",
+        "commercialization_horizon": "",
+    }
     st.session_state.report_markdown = ""
     st.session_state.report_sections = {}
     st.session_state.report_json = {}
@@ -1219,8 +1368,346 @@ SCAFFOLD_BANK = {
 }
 
 
+SCAFFOLD_EXTRA_CATEGORY_PRIORITY = [
+    "technical_or_deeptech_validation",
+    "competition_or_moat",
+    "execution_evidence",
+    "go_to_market",
+    "funding_use",
+    "problem_urgency",
+    "resilience_or_commitment",
+    "founder_advantage",
+    "generic",
+]
+
+SCAFFOLD_EXTRA_KEYWORDS = {
+    "technical_or_deeptech_validation": (
+        "\u6280\u672f", "\u7b97\u6cd5", "\u786c\u4ef6", "\u673a\u5668\u4eba",
+        "\u5177\u8eab\u667a\u80fd", "\u90e8\u7f72", "\u4efb\u52a1\u6210\u529f\u7387",
+        "\u6570\u636e\u95ed\u73af", "\u8bd5\u70b9",
+        "technical", "algorithm", "hardware", "robotics", "embodied ai",
+        "deployment", "task success", "data loop", "pilot",
+    ),
+    "competition_or_moat": (
+        "\u7ade\u4e89", "\u62a4\u57ce\u6cb3", "\u4f18\u52bf", "\u51ed\u4ec0\u4e48",
+        "\u66ff\u4ee3", "\u590d\u5236", "\u7f8e\u56e2", "\u997f\u4e86\u4e48",
+        "compete", "competitor", "moat", "advantage", "defensibility",
+        "replicate", "copy",
+    ),
+    "execution_evidence": (
+        "\u8bc1\u636e", "\u9a8c\u8bc1", "\u6570\u636e", "\u8bbf\u8c08",
+        "\u539f\u578b", "\u8bd5\u70b9", "\u7528\u6237",
+        "evidence", "traction", "validation", "prototype", "pilot",
+        "interview", "user test",
+    ),
+    "go_to_market": (
+        "\u83b7\u5ba2", "\u6e20\u9053", "\u589e\u957f", "\u7559\u5b58",
+        "cac", "\u5206\u53d1",
+        "acquisition", "channel", "distribution", "cac", "retention", "growth",
+    ),
+    "funding_use": (
+        "\u878d\u8d44", "\u94b1\u600e\u4e48\u82b1", "\u8d44\u91d1\u7528\u9014",
+        "\u91cc\u7a0b\u7891", "\u9884\u7b97",
+        "funding", "use of funds", "budget", "milestone", "runway",
+    ),
+    "problem_urgency": (
+        "\u75db\u70b9", "\u7d27\u8feb", "\u4e3a\u4ec0\u4e48\u73b0\u5728",
+        "\u5fc5\u987b\u89e3\u51b3", "\u4ed8\u8d39\u610f\u613f",
+        "pain", "urgency", "why now", "must solve", "willingness to pay",
+    ),
+    "resilience_or_commitment": (
+        "\u5931\u8d25", "\u575a\u6301", "\u653e\u5f03", "\u97e7\u6027", "\u627f\u8bfa",
+        "resilience", "commitment", "fail", "failure", "persist",
+    ),
+    "founder_advantage": (
+        "\u80cc\u666f", "\u7ecf\u5386", "\u4e3a\u4ec0\u4e48\u662f\u4f60",
+        "\u521b\u59cb\u4eba", "\u9002\u5408",
+        "founder", "background", "why you", "founder-market fit",
+    ),
+    "generic": (),
+}
+
+SCAFFOLD_EXTRA_BANK = {
+    "en": {
+        "technical_or_deeptech_validation": [
+            [
+                "Anchor the answer in one real deployment scenario, not the whole technology vision.",
+                "Name the technical metric that proves the system works in that scenario.",
+                "Separate lab performance from field performance.",
+                "Explain how pilot data will create a learning loop.",
+            ],
+            [
+                "Describe the task, environment, user, and failure mode you are validating.",
+                "State the current technical bottleneck and what evidence would clear it.",
+                "Explain what must be true before commercialization is realistic.",
+                "Name the dataset, hardware iteration, or deployment signal you need next.",
+            ],
+        ],
+        "competition_or_moat": [
+            [
+                "Name the strongest substitute or incumbent.",
+                "Explain why your wedge is hard to copy in this specific use case.",
+                "Show evidence that users care about your difference.",
+                "State which advantage is still only a hypothesis.",
+            ],
+            [
+                "Separate product differentiation from defensibility.",
+                "Identify the data, workflow, access, or speed advantage you can compound.",
+                "Explain why a larger player would not immediately prioritize this niche.",
+                "Name the test that would prove the moat is real.",
+            ],
+        ],
+        "execution_evidence": [
+            [
+                "Start with the strongest verified signal, not the aspiration.",
+                "Distinguish user behavior from positive feedback.",
+                "Name the pilot, prototype, interview, usage, or revenue evidence.",
+                "State what evidence is still missing.",
+            ],
+            [
+                "Tie each claim to a concrete observation.",
+                "Explain who produced the signal and what they actually did.",
+                "Avoid treating interest as validation unless behavior changed.",
+                "Name the next validation step and success threshold.",
+            ],
+        ],
+        "go_to_market": [
+            [
+                "Name the first reachable customer segment.",
+                "Identify the channel you can access now.",
+                "Explain why the channel fits the current stage.",
+                "Define the first conversion or retention signal.",
+            ],
+            [
+                "Avoid total market claims and describe the first repeatable path.",
+                "Clarify the buyer, user, and adoption blocker.",
+                "State the smallest go-to-market test you can run.",
+                "Explain how you will learn from failed outreach.",
+            ],
+        ],
+        "funding_use": [
+            [
+                "Map the funding ask to one or two milestones.",
+                "Explain which risk the money reduces first.",
+                "Separate product, validation, hiring, and go-to-market spend.",
+                "State what evidence should exist before the next round.",
+            ],
+            [
+                "Translate budget into time, experiments, and measurable outputs.",
+                "Name what you will not spend on yet.",
+                "Prioritize the riskiest assumption instead of listing every need.",
+                "Define the next financing proof point.",
+            ],
+        ],
+        "problem_urgency": [
+            [
+                "Name who feels the pain and when it becomes urgent.",
+                "Show the cost of doing nothing.",
+                "Separate curiosity from willingness to pay.",
+                "Explain why the timing matters now.",
+            ],
+            [
+                "Use one concrete workflow or decision moment.",
+                "Explain the current workaround and why it breaks.",
+                "Clarify whether the buyer is also the user.",
+                "Name the signal that proves urgency.",
+            ],
+        ],
+        "founder_advantage": [
+            [
+                "Connect your background to the specific insight behind this project.",
+                "Name the access or capability you have that others lack.",
+                "Show how your learning speed is different in this market.",
+                "Tie founder-market fit to evidence, not identity alone.",
+            ],
+            [
+                "Avoid a broad biography and focus on earned insight.",
+                "Describe the moment you saw the problem differently.",
+                "Explain what part of execution depends on your experience.",
+                "Name the credibility signal investors should trust.",
+            ],
+        ],
+        "resilience_or_commitment": [
+            [
+                "Name the hardest expected obstacle.",
+                "Use one example of learning under pressure.",
+                "Explain when you would persist and when you would change direction.",
+                "Show commitment through behavior, not intent.",
+            ],
+            [
+                "Describe the tradeoff you have already accepted.",
+                "Explain how you react when evidence contradicts the plan.",
+                "Name the operating habit that keeps execution stable.",
+                "Avoid heroic language; use a concrete decision.",
+            ],
+        ],
+        "generic": [
+            [
+                "Answer the investor's concern directly in one sentence.",
+                "Add one concrete example or data point.",
+                "Name the assumption your answer depends on.",
+                "End with the next validation step.",
+            ],
+            [
+                "Start with what is already known.",
+                "Separate fact, interpretation, and next action.",
+                "Name the biggest remaining uncertainty.",
+                "Explain what evidence would change your mind.",
+            ],
+            [
+                "Give the short answer first.",
+                "Support it with one specific signal.",
+                "Acknowledge the weakest part of the answer.",
+                "State what you will test next.",
+            ],
+        ],
+    },
+    "zh": {
+        "technical_or_deeptech_validation": [
+            [
+                "\u5148\u628a\u7b54\u6848\u843d\u5230\u4e00\u4e2a\u771f\u5b9e\u90e8\u7f72\u573a\u666f\uff0c\u4e0d\u8981\u53ea\u8bf4\u6280\u672f\u613f\u666f\u3002",
+                "\u8bf4\u51fa\u80fd\u8bc1\u660e\u7cfb\u7edf\u5728\u8be5\u573a\u666f\u6709\u6548\u7684\u6280\u672f\u6307\u6807\u3002",
+                "\u533a\u5206\u5b9e\u9a8c\u5ba4\u8868\u73b0\u548c\u73b0\u573a\u8868\u73b0\u3002",
+                "\u89e3\u91ca\u8bd5\u70b9\u6570\u636e\u5982\u4f55\u5f62\u6210\u5b66\u4e60\u95ed\u73af\u3002",
+            ],
+            [
+                "\u8bf4\u6e05\u6b63\u5728\u9a8c\u8bc1\u7684\u4efb\u52a1\u3001\u73af\u5883\u3001\u7528\u6237\u548c\u5931\u8d25\u6a21\u5f0f\u3002",
+                "\u8bf4\u51fa\u5f53\u524d\u6700\u5173\u952e\u7684\u6280\u672f\u74f6\u9888\u548c\u9a8c\u8bc1\u8bc1\u636e\u3002",
+                "\u89e3\u91ca\u8ddd\u79bb\u5546\u4e1a\u5316\u8fd8\u5fc5\u987b\u6210\u7acb\u7684\u6761\u4ef6\u3002",
+                "\u8bf4\u51fa\u4e0b\u4e00\u6b65\u9700\u8981\u7684\u6570\u636e\u3001\u786c\u4ef6\u8fed\u4ee3\u6216\u90e8\u7f72\u4fe1\u53f7\u3002",
+            ],
+        ],
+        "competition_or_moat": [
+            [
+                "\u8bf4\u51fa\u6700\u5f3a\u7684\u66ff\u4ee3\u65b9\u6848\u6216\u73b0\u6709\u73a9\u5bb6\u3002",
+                "\u89e3\u91ca\u4f60\u7684\u5207\u5165\u70b9\u5728\u8fd9\u4e2a\u573a\u666f\u4e3a\u4ec0\u4e48\u96be\u4ee5\u590d\u5236\u3002",
+                "\u7ed9\u51fa\u7528\u6237\u771f\u5728\u5728\u610f\u8fd9\u4e2a\u5dee\u5f02\u7684\u8bc1\u636e\u3002",
+                "\u8bf4\u6e05\u54ea\u4e2a\u4f18\u52bf\u8fd8\u53ea\u662f\u5047\u8bbe\u3002",
+            ],
+            [
+                "\u533a\u5206\u4ea7\u54c1\u5dee\u5f02\u548c\u53ef\u9632\u5fa1\u6027\u3002",
+                "\u8bf4\u51fa\u53ef\u4ee5\u7d2f\u79ef\u7684\u6570\u636e\u3001\u6d41\u7a0b\u3001\u5165\u53e3\u6216\u901f\u5ea6\u4f18\u52bf\u3002",
+                "\u89e3\u91ca\u5927\u73a9\u5bb6\u4e3a\u4ec0\u4e48\u4e0d\u4f1a\u7acb\u523b\u4f18\u5148\u505a\u8fd9\u4e2a\u7ec6\u5206\u573a\u666f\u3002",
+                "\u8bf4\u51fa\u5982\u4f55\u9a8c\u8bc1\u62a4\u57ce\u6cb3\u771f\u5b9e\u5b58\u5728\u3002",
+            ],
+        ],
+        "execution_evidence": [
+            [
+                "\u5148\u8bf4\u5df2\u7ecf\u88ab\u9a8c\u8bc1\u7684\u6700\u5f3a\u4fe1\u53f7\u3002",
+                "\u533a\u5206\u7528\u6237\u884c\u4e3a\u548c\u53e3\u5934\u8ba4\u53ef\u3002",
+                "\u5177\u4f53\u8bf4\u660e\u8bd5\u70b9\u3001\u539f\u578b\u3001\u8bbf\u8c08\u3001\u4f7f\u7528\u6216\u6536\u5165\u8bc1\u636e\u3002",
+                "\u8bf4\u51fa\u8fd8\u7f3a\u54ea\u4e2a\u5173\u952e\u8bc1\u636e\u3002",
+            ],
+            [
+                "\u628a\u6bcf\u4e2a\u5224\u65ad\u5bf9\u5e94\u5230\u4e00\u4e2a\u5177\u4f53\u89c2\u5bdf\u3002",
+                "\u8bf4\u660e\u4fe1\u53f7\u6765\u81ea\u8c01\uff0c\u4ee5\u53ca\u5bf9\u65b9\u5b9e\u9645\u505a\u4e86\u4ec0\u4e48\u3002",
+                "\u4e0d\u8981\u628a\u5174\u8da3\u5f53\u6210\u9a8c\u8bc1\uff0c\u9664\u975e\u884c\u4e3a\u771f\u7684\u53d8\u4e86\u3002",
+                "\u8bf4\u51fa\u4e0b\u4e00\u6b65\u9a8c\u8bc1\u548c\u6210\u529f\u6807\u51c6\u3002",
+            ],
+        ],
+        "go_to_market": [
+            [
+                "\u8bf4\u51fa\u7b2c\u4e00\u4e2a\u80fd\u89e6\u8fbe\u7684\u5ba2\u6237\u7fa4\u3002",
+                "\u6307\u51fa\u73b0\u5728\u5c31\u80fd\u4f7f\u7528\u7684\u6e20\u9053\u3002",
+                "\u89e3\u91ca\u8fd9\u4e2a\u6e20\u9053\u4e3a\u4ec0\u4e48\u9002\u5408\u5f53\u524d\u9636\u6bb5\u3002",
+                "\u5b9a\u4e49\u7b2c\u4e00\u4e2a\u8f6c\u5316\u6216\u7559\u5b58\u4fe1\u53f7\u3002",
+            ],
+            [
+                "\u4e0d\u8981\u8bf4\u603b\u5e02\u573a\uff0c\u8bf4\u7b2c\u4e00\u6761\u53ef\u91cd\u590d\u8def\u5f84\u3002",
+                "\u8bf4\u6e05\u4e70\u5355\u8005\u3001\u4f7f\u7528\u8005\u548c\u91c7\u7528\u963b\u529b\u3002",
+                "\u8bf4\u51fa\u53ef\u4ee5\u8dd1\u7684\u6700\u5c0f\u5e02\u573a\u8bd5\u9a8c\u3002",
+                "\u89e3\u91ca\u5982\u4f55\u4ece\u5931\u8d25\u7684\u5916\u8054\u4e2d\u5b66\u4e60\u3002",
+            ],
+        ],
+        "funding_use": [
+            [
+                "\u628a\u878d\u8d44\u9700\u6c42\u5bf9\u5e94\u5230\u4e00\u4e24\u4e2a\u91cc\u7a0b\u7891\u3002",
+                "\u8bf4\u660e\u8fd9\u7b14\u94b1\u9996\u5148\u964d\u4f4e\u54ea\u4e2a\u98ce\u9669\u3002",
+                "\u533a\u5206\u4ea7\u54c1\u3001\u9a8c\u8bc1\u3001\u62db\u8058\u548c\u5e02\u573a\u8fdb\u5165\u7528\u9014\u3002",
+                "\u8bf4\u6e05\u4e0b\u4e00\u8f6e\u524d\u5e94\u8be5\u6709\u4ec0\u4e48\u8bc1\u636e\u3002",
+            ],
+            [
+                "\u628a\u9884\u7b97\u7ffb\u8bd1\u6210\u65f6\u95f4\u3001\u5b9e\u9a8c\u548c\u53ef\u8861\u91cf\u4ea7\u51fa\u3002",
+                "\u8bf4\u51fa\u73b0\u9636\u6bb5\u4e0d\u4f1a\u628a\u94b1\u82b1\u5728\u54ea\u91cc\u3002",
+                "\u4f18\u5148\u964d\u4f4e\u6700\u5371\u9669\u7684\u5047\u8bbe\uff0c\u4e0d\u8981\u7f57\u5217\u6240\u6709\u9700\u6c42\u3002",
+                "\u5b9a\u4e49\u4e0b\u4e00\u4e2a\u878d\u8d44\u8bc1\u636e\u70b9\u3002",
+            ],
+        ],
+        "problem_urgency": [
+            [
+                "\u8bf4\u51fa\u8c01\u6709\u75db\u70b9\uff0c\u4ee5\u53ca\u4ec0\u4e48\u65f6\u5019\u53d8\u5f97\u7d27\u8feb\u3002",
+                "\u8bf4\u660e\u4e0d\u89e3\u51b3\u4f1a\u9020\u6210\u4ec0\u4e48\u4ee3\u4ef7\u3002",
+                "\u533a\u5206\u597d\u5947\u548c\u4ed8\u8d39\u610f\u613f\u3002",
+                "\u89e3\u91ca\u4e3a\u4ec0\u4e48\u65f6\u95f4\u70b9\u662f\u73b0\u5728\u3002",
+            ],
+            [
+                "\u7528\u4e00\u4e2a\u5177\u4f53\u6d41\u7a0b\u6216\u51b3\u7b56\u65f6\u523b\u8bf4\u660e\u3002",
+                "\u89e3\u91ca\u73b0\u6709\u66ff\u4ee3\u65b9\u6848\u4e3a\u4ec0\u4e48\u5931\u6548\u3002",
+                "\u8bf4\u6e05\u4e70\u5355\u8005\u662f\u5426\u4e5f\u662f\u4f7f\u7528\u8005\u3002",
+                "\u8bf4\u51fa\u54ea\u4e2a\u4fe1\u53f7\u80fd\u8bc1\u660e\u7d27\u8feb\u6027\u3002",
+            ],
+        ],
+        "founder_advantage": [
+            [
+                "\u628a\u4f60\u7684\u80cc\u666f\u548c\u9879\u76ee\u80cc\u540e\u7684\u5177\u4f53\u6d1e\u5bdf\u8fde\u8d77\u6765\u3002",
+                "\u8bf4\u51fa\u4f60\u62e5\u6709\u800c\u522b\u4eba\u7f3a\u5c11\u7684\u5165\u53e3\u6216\u80fd\u529b\u3002",
+                "\u8bf4\u660e\u4f60\u5728\u8fd9\u4e2a\u5e02\u573a\u4e2d\u7684\u5b66\u4e60\u901f\u5ea6\u6709\u4ec0\u4e48\u4e0d\u540c\u3002",
+                "\u628a\u521b\u59cb\u4eba\u5339\u914d\u5ea6\u843d\u5230\u8bc1\u636e\u4e0a\u3002",
+            ],
+            [
+                "\u4e0d\u8981\u5199\u6cdb\u6cdb\u5c65\u5386\uff0c\u8981\u805a\u7126\u771f\u5b9e\u6d1e\u5bdf\u3002",
+                "\u63cf\u8ff0\u4f60\u4ec0\u4e48\u65f6\u5019\u7528\u4e0d\u540c\u65b9\u5f0f\u770b\u5230\u8fd9\u4e2a\u95ee\u9898\u3002",
+                "\u89e3\u91ca\u6267\u884c\u4e2d\u54ea\u4e2a\u90e8\u5206\u4f9d\u8d56\u4f60\u7684\u7ecf\u9a8c\u3002",
+                "\u8bf4\u51fa\u6295\u8d44\u4eba\u5e94\u8be5\u76f8\u4fe1\u7684\u53ef\u4fe1\u53f7\u3002",
+            ],
+        ],
+        "resilience_or_commitment": [
+            [
+                "\u8bf4\u51fa\u9884\u671f\u6700\u96be\u7684\u969c\u788d\u3002",
+                "\u7528\u4e00\u4e2a\u5728\u538b\u529b\u4e0b\u5b66\u4e60\u7684\u4f8b\u5b50\u3002",
+                "\u89e3\u91ca\u4ec0\u4e48\u65f6\u5019\u575a\u6301\uff0c\u4ec0\u4e48\u65f6\u5019\u8c03\u6574\u65b9\u5411\u3002",
+                "\u7528\u884c\u4e3a\u8bc1\u660e\u6295\u5165\uff0c\u4e0d\u662f\u53ea\u8868\u8fbe\u610f\u56fe\u3002",
+            ],
+            [
+                "\u8bf4\u660e\u4f60\u5df2\u7ecf\u63a5\u53d7\u7684\u53d6\u820d\u3002",
+                "\u89e3\u91ca\u5f53\u8bc1\u636e\u548c\u8ba1\u5212\u51b2\u7a81\u65f6\u4f60\u5982\u4f55\u53cd\u5e94\u3002",
+                "\u8bf4\u51fa\u4fdd\u6301\u6267\u884c\u7a33\u5b9a\u7684\u4e60\u60ef\u3002",
+                "\u907f\u514d\u82f1\u96c4\u5316\u8868\u8ff0\uff0c\u7528\u5177\u4f53\u51b3\u5b9a\u8bf4\u660e\u3002",
+            ],
+        ],
+        "generic": [
+            [
+                "\u7528\u4e00\u53e5\u8bdd\u76f4\u63a5\u56de\u7b54\u6295\u8d44\u4eba\u7684\u62c5\u5fc3\u3002",
+                "\u8865\u5145\u4e00\u4e2a\u5177\u4f53\u4f8b\u5b50\u6216\u6570\u636e\u70b9\u3002",
+                "\u8bf4\u51fa\u8fd9\u4e2a\u7b54\u6848\u4f9d\u8d56\u7684\u5047\u8bbe\u3002",
+                "\u4ee5\u4e0b\u4e00\u6b65\u9a8c\u8bc1\u7ed3\u5c3e\u3002",
+            ],
+            [
+                "\u5148\u8bf4\u5df2\u7ecf\u77e5\u9053\u7684\u4e8b\u5b9e\u3002",
+                "\u533a\u5206\u4e8b\u5b9e\u3001\u89e3\u8bfb\u548c\u4e0b\u4e00\u6b65\u884c\u52a8\u3002",
+                "\u8bf4\u51fa\u6700\u5927\u7684\u672a\u77e5\u95ee\u9898\u3002",
+                "\u89e3\u91ca\u4ec0\u4e48\u8bc1\u636e\u4f1a\u6539\u53d8\u4f60\u7684\u5224\u65ad\u3002",
+            ],
+            [
+                "\u5148\u7ed9\u51fa\u7b80\u77ed\u7b54\u6848\u3002",
+                "\u7528\u4e00\u4e2a\u5177\u4f53\u4fe1\u53f7\u652f\u6491\u5b83\u3002",
+                "\u627f\u8ba4\u7b54\u6848\u91cc\u6700\u8584\u5f31\u7684\u90e8\u5206\u3002",
+                "\u8bf4\u51fa\u63a5\u4e0b\u6765\u8981\u9a8c\u8bc1\u4ec0\u4e48\u3002",
+            ],
+        ],
+    },
+}
+
+
 def classify_question_for_scaffold(question_text: str) -> str:
     text = str(question_text).lower()
+    for category in SCAFFOLD_EXTRA_CATEGORY_PRIORITY:
+        if category == "generic":
+            continue
+        keywords = SCAFFOLD_EXTRA_KEYWORDS.get(category, ())
+        if any(keyword.lower() in text for keyword in keywords):
+            return category
+
     for category in SCAFFOLD_CATEGORY_PRIORITY:
         if category == "generic":
             continue
@@ -1235,14 +1722,16 @@ def get_answer_scaffold(
     language: str,
     question_index: int = 0,
 ) -> list[str]:
-    safe_language = language if language in SCAFFOLD_BANK else "en"
+    safe_language = language if language in SCAFFOLD_EXTRA_BANK else "en"
     category = classify_question_for_scaffold(question_text)
-    language_bank = SCAFFOLD_BANK[safe_language]
-    variants = language_bank.get(category) or language_bank["generic"]
-    if category == "generic":
-        variant_index = question_index % len(variants)
-    else:
-        variant_index = question_index % len(variants)
+    extra_language_bank = SCAFFOLD_EXTRA_BANK[safe_language]
+    base_language_bank = SCAFFOLD_BANK.get(safe_language, SCAFFOLD_BANK["en"])
+    variants = (
+        extra_language_bank.get(category)
+        or base_language_bank.get(category)
+        or extra_language_bank["generic"]
+    )
+    variant_index = question_index % len(variants)
     selected_variant = variants[variant_index]
 
     deduped_scaffold = []
@@ -1256,7 +1745,9 @@ def get_answer_scaffold(
         if len(deduped_scaffold) >= 5:
             break
 
-    return deduped_scaffold or language_bank["generic"][question_index % len(language_bank["generic"])]
+    return deduped_scaffold or extra_language_bank["generic"][
+        question_index % len(extra_language_bank["generic"])
+    ]
 
 
 # ---------- UI ----------
@@ -2063,10 +2554,18 @@ sidebar_profile = (
     if st.session_state.founder_profile
     else current_founder_profile()
 )
+sidebar_context = current_assessment_context()
 completed_fields = sum(
     1 for key in FOUNDER_PROFILE_FIELDS if str(sidebar_profile.get(key, "")).strip()
 )
 profile_ready = profile_is_complete(st.session_state.founder_profile)
+
+assessment_context_labels = {
+    "project_sector": t["project_sector_label"],
+    "current_stage": t["current_stage_label"],
+    "evaluation_goal": t["evaluation_goal_label"],
+    "commercialization_horizon": t["commercialization_horizon_label"],
+}
 
 
 with st.sidebar:
@@ -2093,6 +2592,15 @@ with st.sidebar:
             )
             st.caption(f"{profile_field_labels[field_key]}: {field_status}")
 
+    st.caption(t["assessment_context_title"])
+    for context_key in ASSESSMENT_CONTEXT_FIELDS:
+        context_value = sidebar_context.get(context_key, "")
+        display_value = (
+            assessment_context_label(context_key, context_value, language)
+            if context_value else t["context_not_set"]
+        )
+        st.caption(f"{assessment_context_labels[context_key]}: {display_value}")
+
     if st.button(t["btn_edit_dossier"], use_container_width=True):
         st.session_state.flow_step = "profile"
         st.rerun()
@@ -2105,6 +2613,14 @@ with st.sidebar:
 generate_questions_clicked = False
 
 if st.session_state.flow_step == "profile":
+    context_value_to_index = {
+        field_key: {
+            value: index
+            for index, value in enumerate(assessment_context_option_values(field_key))
+        }
+        for field_key in ASSESSMENT_CONTEXT_FIELDS
+    }
+    current_context = current_assessment_context()
     st.markdown(
         f"""
         <div class="vc-memo vc-dossier-shell">
@@ -2142,6 +2658,30 @@ if st.session_state.flow_step == "profile":
         height=100,
         placeholder=t["goal_placeholder"],
     )
+    project_sector = st.selectbox(
+        t["project_sector_label"],
+        options=assessment_context_option_values("project_sector"),
+        index=context_value_to_index["project_sector"].get(current_context["project_sector"], 0),
+        format_func=lambda code: assessment_context_label("project_sector", code, language),
+    )
+    current_stage = st.selectbox(
+        t["current_stage_label"],
+        options=assessment_context_option_values("current_stage"),
+        index=context_value_to_index["current_stage"].get(current_context["current_stage"], 0),
+        format_func=lambda code: assessment_context_label("current_stage", code, language),
+    )
+    evaluation_goal = st.selectbox(
+        t["evaluation_goal_label"],
+        options=assessment_context_option_values("evaluation_goal"),
+        index=context_value_to_index["evaluation_goal"].get(current_context["evaluation_goal"], 0),
+        format_func=lambda code: assessment_context_label("evaluation_goal", code, language),
+    )
+    commercialization_horizon = st.selectbox(
+        t["commercialization_horizon_label"],
+        options=assessment_context_option_values("commercialization_horizon"),
+        index=context_value_to_index["commercialization_horizon"].get(current_context["commercialization_horizon"], 0),
+        format_func=lambda code: assessment_context_label("commercialization_horizon", code, language),
+    )
     build_dossier_clicked = st.button(
         t["btn_build_dossier"], type="primary", use_container_width=True
     )
@@ -2151,7 +2691,14 @@ if st.session_state.flow_step == "profile":
         if not inputs_ready():
             st.warning(t["warn_build_dossier"])
         else:
+            st.session_state.assessment_context = {
+                "project_sector": project_sector,
+                "current_stage": current_stage,
+                "evaluation_goal": evaluation_goal,
+                "commercialization_horizon": commercialization_horizon,
+            }
             st.session_state.founder_profile = current_founder_profile()
+            st.session_state.founder_profile.update(st.session_state.assessment_context)
             st.session_state.flow_step = "dossier_ready"
             st.rerun()
 
