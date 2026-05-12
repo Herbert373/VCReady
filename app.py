@@ -836,6 +836,125 @@ def assessment_context_label(field_key: str, value: str, language: str) -> str:
     return value
 
 
+def build_assessment_context_prompt_block(context: dict, language: str) -> str:
+    safe_language = language if language in ("en", "zh") else "en"
+    safe_context = context or {}
+    context_lines = []
+    field_titles = {
+        "project_sector": "Project sector",
+        "current_stage": "Current stage",
+        "evaluation_goal": "Evaluation goal",
+        "commercialization_horizon": "Commercialization horizon",
+    }
+
+    for field_key in ASSESSMENT_CONTEXT_FIELDS:
+        value = str(safe_context.get(field_key, "")).strip()
+        label = assessment_context_label(field_key, value, "en") if value else "Not specified"
+        context_lines.append(f"- {field_titles[field_key]}: {label}")
+
+    output_language = "English" if safe_language == "en" else "Chinese"
+    return "\n".join(
+        [
+            "Assessment context for question generation:",
+            *context_lines,
+            (
+                "Use this context to make the questions more relevant, but the final "
+                f"question output language is still controlled by the base prompt "
+                f"language instruction ({output_language})."
+            ),
+        ]
+    )
+
+
+def build_evaluation_lens(context: dict, language: str) -> str:
+    safe_context = context or {}
+    project_sector = str(safe_context.get("project_sector", "")).strip()
+    current_stage = assessment_context_label(
+        "current_stage",
+        str(safe_context.get("current_stage", "")).strip(),
+        "en",
+    )
+    commercialization_horizon = assessment_context_label(
+        "commercialization_horizon",
+        str(safe_context.get("commercialization_horizon", "")).strip(),
+        "en",
+    )
+    sector_focus = {
+        "embodied_ai_robotics": (
+            "Do not judge this project by short-term revenue alone. Do not apply a "
+            "pure SaaS or consumer internet standard mechanically. Pressure-test "
+            "scenario clarity, technical feasibility, task success rate, pilot path, "
+            "data loop, deployment cost, delivery complexity, industry partners, "
+            "capital needs and milestones. Still question the commercialization path, "
+            "but do not treat short-term revenue as the only standard."
+        ),
+        "deeptech": (
+            "Do not judge this project by short-term revenue alone. Do not apply a "
+            "pure SaaS or consumer internet standard mechanically. Pressure-test "
+            "scenario clarity, technical feasibility, task success rate, pilot path, "
+            "data loop, deployment cost, delivery complexity, industry partners, "
+            "capital needs and milestones. Still question the commercialization path, "
+            "but do not treat short-term revenue as the only standard."
+        ),
+        "hardware": (
+            "Do not judge this project by short-term revenue alone. Do not apply a "
+            "pure SaaS or consumer internet standard mechanically. Pressure-test "
+            "scenario clarity, technical feasibility, task success rate, pilot path, "
+            "data loop, deployment cost, delivery complexity, industry partners, "
+            "capital needs and milestones. Still question the commercialization path, "
+            "but do not treat short-term revenue as the only standard."
+        ),
+        "biotech_healthcare": (
+            "Do not judge this project by short-term revenue alone. Do not apply a "
+            "pure SaaS or consumer internet standard mechanically. Pressure-test "
+            "scenario clarity, technical feasibility, task success rate, pilot path, "
+            "data loop, deployment cost, delivery complexity, industry partners, "
+            "capital needs and milestones. Still question the commercialization path, "
+            "but do not treat short-term revenue as the only standard."
+        ),
+        "saas_enterprise": (
+            "Focus on user pain, willingness to pay, retention, sales cycle, GTM, "
+            "and CAC / LTV logic."
+        ),
+        "consumer": (
+            "Focus on usage frequency, distribution, retention, brand or community "
+            "momentum, network effects, and monetization path."
+        ),
+        "marketplace": (
+            "Focus on cold start, supply-demand liquidity, trust mechanism, "
+            "transaction frequency, and take rate logic."
+        ),
+        "fintech": (
+            "Focus on compliance risk, trust, data source, acquisition cost, risk "
+            "control, and the real financial pain point."
+        ),
+    }
+    lens_lines = [
+        "Evaluation lens:",
+        "- Generate exactly 7 VC pressure-test questions.",
+        "- Keep the existing question output format.",
+        "- Do not generate a report.",
+        "- Do not answer the questions.",
+        "- Do not add long explanations before or after the questions.",
+        "- Stay skeptical, specific, and pressure-testing.",
+        "- Context-aware does not mean lenient.",
+    ]
+
+    if project_sector:
+        lens_lines.append(f"- Sector-specific lens: {sector_focus.get(project_sector, 'Use a balanced early-stage venture assessment lens.')}")
+    else:
+        lens_lines.append("- Sector-specific lens: Use a balanced early-stage venture assessment lens.")
+
+    if current_stage:
+        lens_lines.append(f"- Adjust question depth to the current stage: {current_stage}.")
+    if commercialization_horizon:
+        lens_lines.append(
+            f"- Calibrate commercialization expectations to this horizon: {commercialization_horizon}."
+        )
+
+    return "\n".join(lens_lines)
+
+
 def profile_is_complete(profile: dict) -> bool:
     return all(str(profile.get(key, "")).strip() for key in FOUNDER_PROFILE_FIELDS)
 
@@ -2729,12 +2848,27 @@ if generate_questions_clicked:
         with st.spinner(t["spinner_questions"]):
             try:
                 profile = st.session_state.founder_profile
-                prompt = QUESTION_PROMPT.format(
+                context = current_assessment_context()
+                base_prompt = QUESTION_PROMPT.format(
                     founder_background=profile["founder_background"],
                     project_description=profile["project_description"],
                     current_evidence=profile["current_evidence"],
                     funding_goal=profile["funding_goal"],
                     language_instruction=t["language_instruction"],
+                )
+                assessment_context_block = build_assessment_context_prompt_block(
+                    context,
+                    language,
+                )
+                evaluation_lens_block = build_evaluation_lens(context, language)
+                prompt = "\n\n".join(
+                    block
+                    for block in (
+                        assessment_context_block,
+                        evaluation_lens_block,
+                        base_prompt,
+                    )
+                    if block
                 )
                 raw = call_model(prompt)
                 parsed_questions = parse_questions(raw)
