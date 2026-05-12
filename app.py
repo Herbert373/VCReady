@@ -5,6 +5,7 @@ a Founder Reflection Report. Built for portfolio purposes, not commercial use.
 """
 
 import json
+import html
 import os
 import re
 import time
@@ -316,6 +317,299 @@ def parse_report_markdown_sections(markdown_text: str) -> dict:
         return {}
 
 
+def apply_inline_report_formatting(text: str) -> str:
+    """Apply minimal inline formatting to escaped report text."""
+    safe_text = html.escape(text.strip())
+    return re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", safe_text)
+
+
+def format_report_markdown_for_card(text: str) -> str:
+    """Render simple Markdown-like text as safe HTML for report cards."""
+    raw_text = str(text).strip()
+    if not raw_text:
+        return ""
+
+    try:
+        ordered_pattern = re.compile(r"^\s*\d+\s*[\.\)\u3001]\s+")
+        bullet_pattern = re.compile(r"^\s*[-*]\s+")
+        html_parts = []
+        paragraph_lines = []
+        list_type = ""
+
+        def flush_paragraph() -> None:
+            if paragraph_lines:
+                paragraph = " ".join(paragraph_lines)
+                html_parts.append(f"<p>{paragraph}</p>")
+                paragraph_lines.clear()
+
+        def close_list() -> None:
+            nonlocal list_type
+            if list_type:
+                html_parts.append(f"</{list_type}>")
+                list_type = ""
+
+        def open_list(next_type: str) -> None:
+            nonlocal list_type
+            if list_type == next_type:
+                return
+            close_list()
+            flush_paragraph()
+            html_parts.append(f"<{next_type}>")
+            list_type = next_type
+
+        for raw_line in raw_text.splitlines():
+            line = raw_line.strip()
+            if not line:
+                close_list()
+                flush_paragraph()
+                continue
+
+            if ordered_pattern.match(line):
+                open_list("ol")
+                item_text = ordered_pattern.sub("", line, count=1)
+                html_parts.append(f"<li>{apply_inline_report_formatting(item_text)}</li>")
+                continue
+
+            if bullet_pattern.match(line):
+                open_list("ul")
+                item_text = bullet_pattern.sub("", line, count=1)
+                html_parts.append(f"<li>{apply_inline_report_formatting(item_text)}</li>")
+                continue
+
+            close_list()
+            paragraph_lines.append(apply_inline_report_formatting(line))
+
+        close_list()
+        flush_paragraph()
+        return "".join(html_parts) if html_parts else html.escape(raw_text).replace("\n", "<br>")
+    except Exception:
+        return html.escape(raw_text).replace("\n", "<br>")
+
+
+def format_report_card_body(body: str, variant: str = "normal") -> str:
+    """Format report body text for card display."""
+    raw_body = str(body).strip()
+    if not raw_body:
+        return ""
+
+    try:
+        if variant == "scores":
+            score_rows = []
+            for line in raw_body.splitlines():
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                cleaned = re.sub(r"^\s*[-*]\s+", "", stripped)
+                match = re.match(r"^(.+?)(?:[:\uFF1A-])\s*([1-5]\s*/\s*5)\b(.*)$", cleaned)
+                if match:
+                    label = apply_inline_report_formatting(match.group(1))
+                    score = html.escape(match.group(2).replace(" ", ""))
+                    note = match.group(3).strip()
+                    note_html = (
+                        f'<div class="vc-report-score-note">{format_report_markdown_for_card(note)}</div>'
+                        if note else ""
+                    )
+                    score_rows.append(
+                        '<div class="vc-report-score-row">'
+                        f'<span class="vc-report-score-label">{label}</span>'
+                        f'<span class="vc-report-score-value">{score}</span>'
+                        f"{note_html}"
+                        "</div>"
+                    )
+            if score_rows:
+                return f'<div class="vc-report-score-rows">{"".join(score_rows)}</div>'
+
+        return format_report_markdown_for_card(raw_body)
+    except Exception:
+        return html.escape(raw_body).replace("\n", "<br>")
+
+
+def render_report_section_card(title: str, body: str, variant: str = "normal") -> str:
+    """Build one complete escaped report section card."""
+    if not str(title).strip() or not str(body).strip():
+        return ""
+
+    safe_title = html.escape(str(title).strip())
+    safe_body = format_report_card_body(body, variant)
+    safe_variant = html.escape(str(variant).strip() or "normal")
+    return (
+        f'<section class="vc-report-card vc-report-card-{safe_variant}">'
+        f'<h4 class="vc-report-card-title">{safe_title}</h4>'
+        f'<div class="vc-report-card-body">{safe_body}</div>'
+        "</section>"
+    )
+
+
+def render_report_dashboard(
+    report_markdown: str,
+    report_sections: dict,
+    t: dict,
+    language: str,
+) -> None:
+    """Render a contained report dashboard, falling back to raw Markdown."""
+    try:
+        if not isinstance(report_sections, dict) or not report_sections:
+            st.markdown(report_markdown)
+            return
+
+        def normalize_section_title(value: str) -> str:
+            normalized = re.sub(r"^[#\s\d\.\)\:：-]+", "", str(value).strip())
+            normalized = re.sub(r"[*_`]+", "", normalized)
+            normalized = re.sub(r"\s+", " ", normalized)
+            return normalized.strip().lower()
+
+        normalized_sections = {
+            normalize_section_title(title): body
+            for title, body in report_sections.items()
+            if str(title).strip() and str(body).strip()
+        }
+
+        section_specs = [
+            {
+                "slot": "diagnosis",
+                "variant": "primary",
+                "titles": {
+                    "en": "One-sentence diagnosis",
+                    "zh": "一句话诊断",
+                },
+                "aliases": [
+                    "one-sentence diagnosis",
+                    "one sentence diagnosis",
+                    "一句话诊断",
+                ],
+            },
+            {
+                "slot": "logic_gap",
+                "variant": "critical",
+                "titles": {
+                    "en": "Biggest logic gap",
+                    "zh": "最大逻辑漏洞",
+                },
+                "aliases": [
+                    "biggest logic gap",
+                    "largest logic gap",
+                    "key logic gap",
+                    "最大逻辑漏洞",
+                ],
+            },
+            {
+                "slot": "strongest_part",
+                "variant": "strength",
+                "titles": {
+                    "en": "Strongest part of the founder narrative",
+                    "zh": "创始人叙事中最强的部分",
+                },
+                "aliases": [
+                    "strongest part",
+                    "strongest part of the founder narrative",
+                    "strongest part of your founder narrative",
+                    "创始人叙事中最强的部分",
+                    "最强的部分",
+                ],
+            },
+            {
+                "slot": "scores",
+                "variant": "scores",
+                "titles": {
+                    "en": "Scores (1-5)",
+                    "zh": "\u8bc4\u5206\uff081-5 \u5206\uff09",
+                },
+                "aliases": [
+                    "scores",
+                    "scores (1-5)",
+                    "scores (1-5 points)",
+                    "\u8bc4\u5206",
+                    "\u8bc4\u5206\uff081-5 \u5206\uff09",
+                    "\u8bc4\u5206(1-5 \u5206)",
+                ],
+            },
+            {
+                "slot": "must_answer_questions",
+                "variant": "questions",
+                "titles": {
+                    "en": "Three questions you must answer before meeting investors",
+                    "zh": "\u89c1\u6295\u8d44\u4eba\u524d\u5fc5\u987b\u56de\u7b54\u7684\u4e09\u4e2a\u95ee\u9898",
+                },
+                "aliases": [
+                    "three questions you must answer before meeting investors",
+                    "must-answer questions",
+                    "must answer questions",
+                    "\u89c1\u6295\u8d44\u4eba\u524d\u5fc5\u987b\u56de\u7b54\u7684\u4e09\u4e2a\u95ee\u9898",
+                ],
+            },
+            {
+                "slot": "advice",
+                "variant": "normal",
+                "titles": {
+                    "en": "Concrete advice to improve the pitch",
+                    "zh": "具体修改建议",
+                },
+                "aliases": [
+                    "concrete advice",
+                    "specific advice",
+                    "concrete advice to improve the pitch",
+                    "concrete revision advice",
+                    "具体修改建议",
+                    "具体建议",
+                ],
+            },
+        ]
+
+        safe_language = language if language in ("en", "zh") else "en"
+        cards = {}
+        for spec in section_specs:
+            body = ""
+            for alias in spec["aliases"]:
+                body = normalized_sections.get(normalize_section_title(alias), "")
+                if body:
+                    break
+            if body:
+                card_title = spec["titles"][safe_language]
+                card_html = render_report_section_card(card_title, body, spec["variant"])
+                if card_html:
+                    cards[spec["slot"]] = card_html
+
+        if not cards:
+            st.markdown(report_markdown)
+            return
+
+        dashboard_title = html.escape(str(t.get("report_subheader", "Founder Reflection Report")))
+        diagnosis_card = cards.get("diagnosis", "")
+        logic_gap_card = cards.get("logic_gap", "")
+        strongest_part_card = cards.get("strongest_part", "")
+        scores_card = cards.get("scores", "")
+        must_answer_questions_card = cards.get("must_answer_questions", "")
+        advice_card = cards.get("advice", "")
+
+        insight_grid = ""
+        if logic_gap_card or strongest_part_card:
+            insight_grid = (
+                '<div class="vc-report-insight-grid">'
+                f"{strongest_part_card}"
+                f"{logic_gap_card}"
+                "</div>"
+            )
+
+        dashboard_html = (
+            '<div class="vc-report-dashboard">'
+            '<div class="vc-report-dashboard-header">'
+            '<p class="vc-memo-kicker">REFLECTION REPORT</p>'
+            f'<h3 class="vc-report-dashboard-title">{dashboard_title}</h3>'
+            "</div>"
+            '<div class="vc-report-dashboard-grid">'
+            f"{diagnosis_card}"
+            f"{insight_grid}"
+            f"{scores_card}"
+            f"{must_answer_questions_card}"
+            f"{advice_card}"
+            "</div>"
+            "</div>"
+        )
+        st.markdown(dashboard_html, unsafe_allow_html=True)
+    except Exception:
+        st.markdown(report_markdown)
+
+
 def safe_parse_report_json(text: str) -> dict:
     """Parse a JSON object from model output without breaking the Streamlit page."""
     if not isinstance(text, str) or not text.strip():
@@ -605,17 +899,364 @@ def get_answer_scaffold(question_text: str, language: str) -> list[str]:
         },
     }
 
+    priority_order = [
+        "competition_or_moat",
+        "execution_evidence",
+        "go_to_market",
+        "funding_use",
+        "problem_urgency",
+        "resilience_or_commitment",
+        "founder_advantage",
+        "generic",
+    ]
+
     matched_type = "generic"
-    for scaffold_type, keywords in keyword_groups.items():
+    for scaffold_type in priority_order:
+        if scaffold_type == "generic":
+            continue
+        keywords = keyword_groups.get(scaffold_type, ())
         if any(keyword in text for keyword in keywords):
             matched_type = scaffold_type
             break
 
     safe_language = language if language in scaffold_texts else "en"
-    return scaffold_texts[safe_language].get(
+    selected_scaffold = scaffold_texts[safe_language].get(
         matched_type,
         scaffold_texts[safe_language]["generic"],
     )
+
+    deduped_scaffold = []
+    seen_lines = set()
+    for item in selected_scaffold:
+        normalized_item = re.sub(r"\s+", " ", item.strip().lower())
+        if not normalized_item or normalized_item in seen_lines:
+            continue
+        seen_lines.add(normalized_item)
+        deduped_scaffold.append(item)
+        if len(deduped_scaffold) >= 5:
+            break
+
+    return deduped_scaffold or scaffold_texts[safe_language]["generic"][:4]
+
+
+SCAFFOLD_CATEGORY_PRIORITY = [
+    "competition_or_moat",
+    "execution_evidence",
+    "go_to_market",
+    "funding_use",
+    "problem_urgency",
+    "resilience_or_commitment",
+    "founder_advantage",
+    "generic",
+]
+
+SCAFFOLD_KEYWORDS = {
+    "competition_or_moat": (
+        "凭什么", "优势", "护城河", "竞争", "竞品", "美团", "饿了么", "壁垒",
+        "advantage", "moat", "compete", "competition", "competitor", "incumbent",
+        "defensible", "differentiation",
+    ),
+    "execution_evidence": (
+        "证据", "验证", "试点", "原型", "用户访谈", "访谈", "数据", "进展",
+        "traction", "evidence", "prototype", "pilot", "loi", "user interview",
+        "validation", "validated",
+    ),
+    "go_to_market": (
+        "获客", "用户增长", "渠道", "销售", "转化", "留存", "cac",
+        "distribution", "growth", "go-to-market", "gtm", "channel",
+        "customer acquisition", "sales",
+    ),
+    "funding_use": (
+        "融资", "钱怎么花", "资金", "里程碑", " runway", "募资",
+        "funding", "capital", "raise", "use of funds", "milestone", "runway",
+    ),
+    "problem_urgency": (
+        "痛点", "紧迫", "刚需", "优先级", "为什么现在", "问题紧迫",
+        "urgent", "urgency", "pain", "must-have", "why now", "problem urgency",
+        "priority",
+    ),
+    "resilience_or_commitment": (
+        "韧性", "坚持", "失败", "挫折", "风险", "承诺", "投入",
+        "resilience", "commitment", "persist", "failure", "setback", "risk",
+    ),
+    "founder_advantage": (
+        "创始人", "为什么是你", "背景", "经历", "洞察", "匹配",
+        "founder-market", "founder market", "why you", "domain expertise",
+        "background", "unique insight", "founder advantage",
+    ),
+    "generic": (),
+}
+
+SCAFFOLD_BANK = {
+    "en": {
+        "competition_or_moat": [
+            [
+                "Name the incumbent or substitute you are being compared against.",
+                "Explain the narrow wedge where your approach is meaningfully better.",
+                "Show the evidence that users would switch or start with you.",
+                "State what part of the advantage is still unproven.",
+            ],
+            [
+                "Separate temporary speed from a durable advantage.",
+                "Describe the user access, data, workflow, or insight others lack.",
+                "Acknowledge why large players may ignore this niche for now.",
+                "Name the test that would prove your moat is real.",
+            ],
+        ],
+        "execution_evidence": [
+            [
+                "List the strongest concrete proof you already have.",
+                "Separate real behavior from compliments or opinions.",
+                "Mention pilots, interviews, usage, LOIs, revenue, or prototypes if available.",
+                "Name the next experiment that would reduce the biggest uncertainty.",
+            ],
+            [
+                "Start with what has been validated, not what you hope is true.",
+                "Describe who gave the signal and what they actually did.",
+                "Call out weak evidence honestly before the investor does.",
+                "Tie each claim to one observable metric or user action.",
+            ],
+        ],
+        "go_to_market": [
+            [
+                "Start with the first reachable user segment.",
+                "Name the channel you can access now, not later at scale.",
+                "Explain why this channel should convert for your current stage.",
+                "Identify the first acquisition or retention signal you will track.",
+            ],
+            [
+                "Avoid total-market language; describe the first repeatable path.",
+                "State who makes the buying or adoption decision.",
+                "Explain the cost, friction, or trust barrier in the channel.",
+                "Name the smallest campaign or pilot that can test the channel.",
+            ],
+        ],
+        "funding_use": [
+            [
+                "Tie the funding request to specific milestones.",
+                "Explain which risk the capital reduces first.",
+                "Separate product, hiring, validation, and go-to-market uses.",
+                "State what should be true by the next financing point.",
+            ],
+            [
+                "Translate money into time, experiments, and measurable outcomes.",
+                "Prioritize one or two critical risks instead of listing everything.",
+                "Explain what you would not spend on yet.",
+                "Define the evidence investors should see after this round.",
+            ],
+        ],
+        "problem_urgency": [
+            [
+                "Describe who has the problem and when it becomes painful.",
+                "Separate nice-to-have interest from must-solve urgency.",
+                "Use concrete costs, delays, risks, or workflow breakdowns.",
+                "Explain why this matters now instead of later.",
+            ],
+            [
+                "Name the moment that forces the user to act.",
+                "Show what happens if the user keeps the current workaround.",
+                "Clarify whether the buyer and the sufferer are the same person.",
+                "Use a specific scenario instead of a broad market claim.",
+            ],
+        ],
+        "resilience_or_commitment": [
+            [
+                "Name the hard part you realistically expect.",
+                "Use a specific example of persistence or learning under pressure.",
+                "Explain what would make you persist versus change direction.",
+                "Show commitment through behavior, not only intention.",
+            ],
+            [
+                "Describe the tradeoff you have already accepted to pursue this.",
+                "Show how you respond when evidence contradicts your plan.",
+                "Name the support system or operating habit that keeps execution stable.",
+                "Avoid heroic claims; use one concrete decision or action.",
+            ],
+        ],
+        "founder_advantage": [
+            [
+                "Connect your background to this specific problem.",
+                "Name the insight an outsider would likely miss.",
+                "Show how your access to users, partners, or data is different.",
+                "Explain why you can learn faster in this niche.",
+            ],
+            [
+                "Avoid a generic biography; focus on relevant earned insight.",
+                "Describe the moment that made you see the problem differently.",
+                "State what capability you have that the project depends on.",
+                "Tie founder-market fit to evidence, not identity alone.",
+            ],
+        ],
+        "generic": [
+            [
+                "Answer the investor's underlying concern, not only the literal wording.",
+                "Use specific evidence before broad claims.",
+                "State the strongest assumption and how you will test it.",
+                "Separate what is proven, uncertain, and next.",
+            ],
+            [
+                "Start with the direct answer in one sentence.",
+                "Add one concrete example or data point.",
+                "Name the risk your answer does not fully solve yet.",
+                "End with the next action or validation step.",
+            ],
+        ],
+    },
+    "zh": {
+        "competition_or_moat": [
+            [
+                "先说清楚投资人会把你和谁比较。",
+                "说明你切入的具体场景为什么更窄、更有效。",
+                "给出用户愿意切换或优先选择你的证据。",
+                "说清楚哪些优势还没有被验证。",
+            ],
+            [
+                "区分短期速度和长期壁垒。",
+                "说明你独有的用户入口、数据、流程或洞察。",
+                "解释为什么大玩家暂时不会优先解决这个细分场景。",
+                "说出下一步如何验证护城河是否真实。",
+            ],
+        ],
+        "execution_evidence": [
+            [
+                "先列出已经拿到的最强证据。",
+                "区分真实行为和口头认可。",
+                "如果有试点、访谈、使用数据、意向书、收入或原型，要具体说明。",
+                "指出下一步实验要降低哪一个最大不确定性。",
+            ],
+            [
+                "先说已经验证的事实，不要先说愿景。",
+                "说明信号来自谁，以及对方实际做了什么。",
+                "主动承认薄弱证据，避免被投资人追问时被动。",
+                "把每个关键判断对应到一个可观察指标或用户行为。",
+            ],
+        ],
+        "go_to_market": [
+            [
+                "先说最先能触达的用户群，而不是总市场。",
+                "说明现在就能使用的渠道。",
+                "解释这个渠道为什么适合当前阶段。",
+                "指出第一个获客或留存信号是什么。",
+            ],
+            [
+                "不要泛泛说市场很大，要说第一条可重复路径。",
+                "说明谁做购买或采用决策。",
+                "解释渠道里的成本、阻力或信任门槛。",
+                "说出最小的一次渠道实验或试点。",
+            ],
+        ],
+        "funding_use": [
+            [
+                "把融资需求对应到具体里程碑。",
+                "说明这笔钱优先降低哪一个风险。",
+                "区分产品、招聘、验证和市场进入等用途。",
+                "说清楚下一轮融资前应该看到什么证据。",
+            ],
+            [
+                "把钱翻译成时间、实验和可衡量结果。",
+                "优先说明一两个关键风险，不要罗列所有事项。",
+                "说明现阶段不会把钱花在哪里。",
+                "定义这轮之后投资人应该看到的验证结果。",
+            ],
+        ],
+        "problem_urgency": [
+            [
+                "说明谁有这个问题，以及什么时候痛到必须行动。",
+                "区分锦上添花的兴趣和必须解决的紧迫需求。",
+                "用具体成本、延误、风险或流程崩溃来说明痛点。",
+                "解释为什么现在必须解决，而不是以后再说。",
+            ],
+            [
+                "说出迫使用户采取行动的具体时刻。",
+                "说明如果继续用现有替代方案，会发生什么损失。",
+                "区分付费决策者和真正承受痛点的人。",
+                "用一个具体场景代替宽泛市场判断。",
+            ],
+        ],
+        "resilience_or_commitment": [
+            [
+                "说出你预期最难的部分。",
+                "用一个具体例子说明你如何在压力下学习或恢复。",
+                "解释什么情况下会坚持，什么情况下会调整方向。",
+                "用行为证明投入，而不是只表达态度。",
+            ],
+            [
+                "说明你已经为这件事接受了什么取舍。",
+                "展示当证据和计划冲突时你如何反应。",
+                "说出支撑持续执行的习惯或机制。",
+                "避免空泛表态，用一个具体决定或行动来证明。",
+            ],
+        ],
+        "founder_advantage": [
+            [
+                "把你的背景和这个具体问题连接起来。",
+                "说出外部人容易忽略、但你看到的洞察。",
+                "说明你接触用户、伙伴或数据的方式有什么不同。",
+                "解释为什么你能在这个细分场景里学得更快。",
+            ],
+            [
+                "不要写泛泛履历，要聚焦相关的真实洞察。",
+                "描述你什么时候开始用不同方式理解这个问题。",
+                "说出项目最依赖你的哪项能力。",
+                "把创始人匹配度落到证据上，而不是身份标签上。",
+            ],
+        ],
+        "generic": [
+            [
+                "回答投资人真正担心的问题，而不只是回应字面问题。",
+                "先给具体证据，再做概括判断。",
+                "说清楚最关键的假设，以及准备如何验证。",
+                "区分已经证明的事、仍不确定的事和下一步行动。",
+            ],
+            [
+                "先用一句话直接回答问题。",
+                "补充一个具体例子或数据点。",
+                "指出这个答案还没有完全解决的风险。",
+                "最后给出下一步验证或行动。",
+            ],
+        ],
+    },
+}
+
+
+def classify_question_for_scaffold(question_text: str) -> str:
+    text = str(question_text).lower()
+    for category in SCAFFOLD_CATEGORY_PRIORITY:
+        if category == "generic":
+            continue
+        keywords = SCAFFOLD_KEYWORDS.get(category, ())
+        if any(keyword.lower() in text for keyword in keywords):
+            return category
+    return "generic"
+
+
+def get_answer_scaffold(
+    question_text: str,
+    language: str,
+    question_index: int = 0,
+) -> list[str]:
+    safe_language = language if language in SCAFFOLD_BANK else "en"
+    category = classify_question_for_scaffold(question_text)
+    language_bank = SCAFFOLD_BANK[safe_language]
+    variants = language_bank.get(category) or language_bank["generic"]
+    if category == "generic":
+        variant_index = question_index % len(variants)
+    else:
+        variant_index = question_index % len(variants)
+    selected_variant = variants[variant_index]
+
+    deduped_scaffold = []
+    seen_lines = set()
+    for item in selected_variant:
+        normalized_item = re.sub(r"\s+", " ", item.strip().lower())
+        if not normalized_item or normalized_item in seen_lines:
+            continue
+        seen_lines.add(normalized_item)
+        deduped_scaffold.append(item)
+        if len(deduped_scaffold) >= 5:
+            break
+
+    return deduped_scaffold or language_bank["generic"][question_index % len(language_bank["generic"])]
 
 
 # ---------- UI ----------
@@ -1135,6 +1776,158 @@ st.markdown(
         border-top: 1px solid rgba(34, 50, 74, 0.95);
     }
 
+    .vc-report-dashboard {
+        width: min(calc(100vw - 3rem), 1120px);
+        max-width: 1120px;
+        margin: 0 auto;
+        border: 1px solid rgba(214, 179, 106, 0.24);
+        border-radius: 8px;
+        background: linear-gradient(180deg, rgba(18, 34, 56, 0.96), rgba(15, 27, 45, 0.98));
+        box-shadow: 0 22px 42px rgba(0, 0, 0, 0.22);
+        overflow: hidden;
+    }
+
+    .vc-report-dashboard-header {
+        padding: 1.15rem 1.15rem 0.95rem 1.15rem;
+        border-bottom: 1px solid var(--vc-border);
+    }
+
+    .vc-report-dashboard-title {
+        margin: 0;
+        color: var(--vc-text);
+        font-size: 1.12rem;
+        font-weight: 760;
+        letter-spacing: 0;
+        line-height: 1.3;
+    }
+
+    .vc-report-dashboard-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.9rem;
+        padding: 1rem 1.1rem 1.1rem 1.1rem;
+        background: rgba(8, 17, 31, 0.18);
+    }
+
+    .vc-report-insight-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.9rem;
+    }
+
+    .vc-report-card {
+        border: 1px solid rgba(34, 50, 74, 0.95);
+        border-radius: 8px;
+        background: rgba(8, 17, 31, 0.38);
+        box-shadow: 0 14px 26px rgba(0, 0, 0, 0.18);
+        padding: 1rem;
+        min-width: 0;
+    }
+
+    .vc-report-card-primary {
+        border-color: rgba(79, 124, 255, 0.38);
+    }
+
+    .vc-report-card-critical {
+        border-color: rgba(214, 179, 106, 0.36);
+    }
+
+    .vc-report-card-strength {
+        border-color: rgba(100, 140, 255, 0.34);
+    }
+
+    .vc-report-card-title {
+        margin: 0 0 0.65rem 0;
+        color: #f7f1e4;
+        font-size: 0.95rem;
+        font-weight: 760;
+        line-height: 1.3;
+        letter-spacing: 0;
+    }
+
+    .vc-report-card-body {
+        color: #d9e0eb;
+        font-size: 0.93rem;
+        line-height: 1.72;
+        overflow-wrap: anywhere;
+    }
+
+    .vc-report-card-body p {
+        margin: 0 0 0.7rem 0;
+    }
+
+    .vc-report-card-body p:last-child {
+        margin-bottom: 0;
+    }
+
+    .vc-report-card-body ul,
+    .vc-report-card-body ol {
+        margin: 0 0 0.8rem 1.15rem;
+        padding: 0;
+    }
+
+    .vc-report-card-body li {
+        margin: 0 0 0.45rem 0;
+    }
+
+    .vc-report-card-body strong {
+        color: #f7f1e4;
+        font-weight: 720;
+    }
+
+    .vc-report-text-line,
+    .vc-report-list-line {
+        margin: 0 0 0.5rem 0;
+    }
+
+    .vc-report-list-line {
+        padding-left: 0.15rem;
+    }
+
+    .vc-report-score-rows {
+        display: grid;
+        gap: 0.55rem;
+    }
+
+    .vc-report-score-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.75rem;
+        align-items: center;
+        padding: 0.55rem 0.65rem;
+        border: 1px solid rgba(34, 50, 74, 0.75);
+        border-radius: 8px;
+        background: rgba(15, 27, 45, 0.58);
+    }
+
+    .vc-report-score-label {
+        color: #d9e0eb;
+        min-width: 0;
+    }
+
+    .vc-report-score-value {
+        color: #f7f1e4;
+        font-weight: 760;
+        white-space: nowrap;
+    }
+
+    .vc-report-score-note {
+        grid-column: 1 / -1;
+        color: var(--vc-muted);
+        font-size: 0.86rem;
+        line-height: 1.55;
+    }
+
+    @media (max-width: 760px) {
+        .vc-report-dashboard {
+            width: min(calc(100vw - 1.5rem), 1120px);
+        }
+
+        .vc-report-insight-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
     hr, div[data-testid="stDivider"] {
         border-color: var(--vc-border);
     }
@@ -1457,7 +2250,7 @@ if st.session_state.flow_step == "guided_answer" and st.session_state.questions_
         unsafe_allow_html=True,
     )
     with st.expander(t["scaffold_expander_title"], expanded=False):
-        for scaffold_item in get_answer_scaffold(current_question, language):
+        for scaffold_item in get_answer_scaffold(current_question, language, current_index):
             st.markdown(f"- {scaffold_item}")
 
     current_answer = st.text_area(
@@ -1688,20 +2481,12 @@ elif st.session_state.flow_step == "questions_fallback" and st.session_state.que
 # ---------- Step 3: render report + download ----------
 
 if st.session_state.flow_step == "report_ready" and st.session_state.report_markdown:
-    st.markdown(
-        f"""
-        <div class="vc-memo vc-report-shell">
-            <div class="vc-memo-header">
-                <p class="vc-memo-kicker">REFLECTION REPORT</p>
-                <h3 class="vc-memo-title">{t["report_subheader"]}</h3>
-            </div>
-            <div class="vc-memo-divider"></div>
-            <div class="vc-memo-body vc-report-body">
-        """,
-        unsafe_allow_html=True,
+    render_report_dashboard(
+        st.session_state.report_markdown,
+        st.session_state.report_sections,
+        t,
+        language,
     )
-    st.markdown(st.session_state.report_markdown)
-    st.markdown("</div></div>", unsafe_allow_html=True)
 
     st.download_button(
         label=t["btn_download"],
