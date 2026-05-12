@@ -532,6 +532,18 @@ def render_report_dashboard(
 
         section_specs = [
             {
+                "slot": "assessment_lens",
+                "variant": "normal",
+                "titles": {
+                    "en": "Assessment Lens",
+                    "zh": "\u8bc4\u4f30\u89c6\u89d2",
+                },
+                "aliases": [
+                    "assessment lens",
+                    "\u8bc4\u4f30\u89c6\u89d2",
+                ],
+            },
+            {
                 "slot": "diagnosis",
                 "variant": "primary",
                 "titles": {
@@ -640,6 +652,7 @@ def render_report_dashboard(
             return
 
         dashboard_title = html.escape(str(t.get("report_subheader", "Founder Reflection Report")))
+        assessment_lens_card = cards.get("assessment_lens", "")
         diagnosis_card = cards.get("diagnosis", "")
         logic_gap_card = cards.get("logic_gap", "")
         strongest_part_card = cards.get("strongest_part", "")
@@ -663,6 +676,7 @@ def render_report_dashboard(
             f'<h3 class="vc-report-dashboard-title">{dashboard_title}</h3>'
             "</div>"
             '<div class="vc-report-dashboard-grid">'
+            f"{assessment_lens_card}"
             f"{diagnosis_card}"
             f"{insight_grid}"
             f"{scores_card}"
@@ -953,6 +967,242 @@ def build_evaluation_lens(context: dict, language: str) -> str:
         )
 
     return "\n".join(lens_lines)
+
+
+def build_report_evaluation_lens(context: dict, language: str) -> str:
+    safe_language = language if language in ("en", "zh") else "en"
+    safe_context = context or {}
+    project_sector = str(safe_context.get("project_sector", "")).strip()
+    commercialization_horizon = str(
+        safe_context.get("commercialization_horizon", "")
+    ).strip()
+    current_stage_label = assessment_context_label(
+        "current_stage",
+        str(safe_context.get("current_stage", "")).strip(),
+        "en",
+    )
+    commercialization_horizon_label = assessment_context_label(
+        "commercialization_horizon",
+        commercialization_horizon,
+        "en",
+    )
+    section_title = "Assessment Lens" if safe_language == "en" else "\u8bc4\u4f30\u89c6\u89d2"
+    required_sections = (
+        "One-sentence diagnosis; Strongest part of the founder narrative; "
+        "Biggest logic gap; Scores (1-5); Three questions you must answer "
+        "before meeting investors; Concrete advice to improve the pitch"
+        if safe_language == "en"
+        else (
+            "\u4e00\u53e5\u8bdd\u8bca\u65ad; "
+            "\u521b\u59cb\u4eba\u53d9\u4e8b\u4e2d\u6700\u5f3a\u7684\u90e8\u5206; "
+            "\u6700\u5927\u903b\u8f91\u6f0f\u6d1e; "
+            "\u8bc4\u5206\uff081-5 \u5206\uff09; "
+            "\u89c1\u6295\u8d44\u4eba\u524d\u5fc5\u987b\u56de\u7b54\u7684\u4e09\u4e2a\u95ee\u9898; "
+            "\u5177\u4f53\u4fee\u6539\u5efa\u8bae"
+        )
+    )
+    sector_focus = {
+        "embodied_ai_robotics": (
+            "Use a long-cycle technical venture lens. Do not judge failure by "
+            "short-term revenue alone or apply pure SaaS / consumer internet "
+            "standards mechanically. Evaluate scenario clarity, technical "
+            "feasibility, task success rate, pilot path, data loop, deployment "
+            "cost, delivery complexity, industry partners, capital needs and "
+            "milestones, and credible commercialization path."
+        ),
+        "deeptech": (
+            "Use a long-cycle technical venture lens. Do not judge failure by "
+            "short-term revenue alone or apply pure SaaS / consumer internet "
+            "standards mechanically. Evaluate scenario clarity, technical "
+            "feasibility, task success rate, pilot path, data loop, deployment "
+            "cost, delivery complexity, industry partners, capital needs and "
+            "milestones, and credible commercialization path."
+        ),
+        "hardware": (
+            "Use a long-cycle technical venture lens. Do not judge failure by "
+            "short-term revenue alone or apply pure SaaS / consumer internet "
+            "standards mechanically. Evaluate scenario clarity, technical "
+            "feasibility, task success rate, pilot path, data loop, deployment "
+            "cost, delivery complexity, industry partners, capital needs and "
+            "milestones, and credible commercialization path."
+        ),
+        "biotech_healthcare": (
+            "Use a long-cycle technical venture lens. Do not judge failure by "
+            "short-term revenue alone or apply pure SaaS / consumer internet "
+            "standards mechanically. Evaluate scenario clarity, technical "
+            "feasibility, task success rate, pilot path, data loop, deployment "
+            "cost, delivery complexity, industry partners, capital needs and "
+            "milestones, and credible commercialization path."
+        ),
+        "saas_enterprise": (
+            "Use a SaaS / enterprise lens focused on user pain, willingness to "
+            "pay, retention, sales cycle, GTM, and CAC / LTV logic."
+        ),
+        "consumer": (
+            "Use a consumer lens focused on usage frequency, distribution, "
+            "retention, brand or community momentum, network effects, and "
+            "monetization path."
+        ),
+        "marketplace": (
+            "Use a marketplace lens focused on cold start, supply-demand "
+            "liquidity, trust mechanism, transaction frequency, and take rate "
+            "logic."
+        ),
+        "fintech": (
+            "Use a fintech lens focused on compliance risk, trust, data source, "
+            "acquisition cost, risk control, and the real financial pain point."
+        ),
+    }
+    long_cycle_context = project_sector in {
+        "embodied_ai_robotics",
+        "deeptech",
+        "hardware",
+        "biotech_healthcare",
+    } or commercialization_horizon in {
+        "long_cycle_pre_commercial",
+        "research_to_market_uncertain",
+    }
+    lens_lines = [
+        "Report evaluation lens:",
+        f"- Add a report section headed exactly: ## {section_title}",
+        (
+            "- In that section, explain project sector, current stage, evaluation "
+            "goal, commercialization horizon, the assessment lens used, standards "
+            "that should not be applied mechanically, and the standards that matter "
+            "most in this review."
+        ),
+        f"- Keep all existing report sections: {required_sections}.",
+        "- Do not remove, rename, or merge the existing report sections.",
+        "- Do not generate JSON, a risk map, follow-up questions, or answers for the founder.",
+        "- Context-aware does not mean lenient.",
+        "- Do not excuse weak logic, missing evidence, vague milestones, or unclear customer need.",
+    ]
+
+    if project_sector:
+        lens_lines.append(
+            f"- Sector lens: {sector_focus.get(project_sector, 'Use a generic early-stage founder assessment lens.')}"
+        )
+    else:
+        lens_lines.append("- Sector lens: Use a generic early-stage founder assessment lens.")
+
+    if current_stage_label:
+        lens_lines.append(f"- Stage lens: Calibrate evidence expectations to {current_stage_label}.")
+    if commercialization_horizon_label:
+        lens_lines.append(
+            f"- Commercialization horizon lens: Calibrate timing expectations to {commercialization_horizon_label}."
+        )
+    if long_cycle_context:
+        lens_lines.extend(
+            [
+                "- For this long-cycle or technical context, do not make short-term revenue, CAC, or fast profitability the only standard.",
+                "- Stay strict: if scenario clarity is weak, say so.",
+                "- Stay strict: if technical validation is insufficient, say so.",
+                "- Stay strict: if pilot path, deployment cost, industry partners, or milestones are unclear, say so.",
+            ]
+        )
+
+    return "\n".join(lens_lines)
+
+
+def build_assessment_lens_markdown(context: dict, language: str) -> str:
+    safe_language = language if language in ("en", "zh") else "en"
+    safe_context = context or {}
+    sector_value = str(safe_context.get("project_sector", "")).strip()
+    stage_value = str(safe_context.get("current_stage", "")).strip()
+    goal_value = str(safe_context.get("evaluation_goal", "")).strip()
+    horizon_value = str(safe_context.get("commercialization_horizon", "")).strip()
+
+    sector_label_en = assessment_context_label("project_sector", sector_value, "en") if sector_value else "Not specified"
+    stage_label_en = assessment_context_label("current_stage", stage_value, "en") if stage_value else "Not specified"
+    goal_label_en = assessment_context_label("evaluation_goal", goal_value, "en") if goal_value else "Not specified"
+    horizon_label_en = (
+        assessment_context_label("commercialization_horizon", horizon_value, "en")
+        if horizon_value else "Not specified"
+    )
+
+    long_cycle_context = sector_value in {
+        "embodied_ai_robotics",
+        "deeptech",
+        "hardware",
+        "biotech_healthcare",
+    } or horizon_value in {
+        "long_cycle_pre_commercial",
+        "research_to_market_uncertain",
+    }
+
+    if safe_language == "zh":
+        body_lines = [
+            "## \u8bc4\u4f30\u89c6\u89d2",
+            "",
+            "\u672c\u62a5\u544a\u91c7\u7528\u4ee5\u4e0b\u8bc4\u4f30\u4e0a\u4e0b\u6587\uff1a",
+            f"- \u9879\u76ee\u7c7b\u578b\uff1a{sector_label_en}",
+            f"- \u5f53\u524d\u9636\u6bb5\uff1a{stage_label_en}",
+            f"- \u8bc4\u4f30\u76ee\u6807\uff1a{goal_label_en}",
+            f"- \u5546\u4e1a\u5316\u5468\u671f\uff1a{horizon_label_en}",
+            "",
+        ]
+        if long_cycle_context:
+            body_lines.append(
+                "\u672c\u62a5\u544a\u4e0d\u4f1a\u5c06\u77ed\u671f\u6536\u5165\u3001CAC \u6216\u5feb\u901f\u76c8\u5229\u4f5c\u4e3a\u552f\u4e00\u5224\u65ad\u6807\u51c6\u3002\u5bf9\u4e8e DeepTech / \u5177\u8eab\u667a\u80fd / \u786c\u4ef6 / \u751f\u7269\u79d1\u6280\u7b49\u957f\u5468\u671f\u6216\u5546\u4e1a\u5316\u524d\u9879\u76ee\uff0c\u672c\u62a5\u544a\u91cd\u70b9\u5173\u6ce8\u573a\u666f\u6e05\u6670\u5ea6\u3001\u6280\u672f\u53ef\u884c\u6027\u3001\u4efb\u52a1\u6210\u529f\u7387\u3001\u8bd5\u70b9\u8def\u5f84\u3001\u6570\u636e\u95ed\u73af\u3001\u90e8\u7f72\u6210\u672c\u3001\u4ea4\u4ed8\u590d\u6742\u5ea6\u3001\u4ea7\u4e1a\u4f19\u4f34\u3001\u8d44\u672c\u9700\u6c42\u4e0e\u91cc\u7a0b\u7891\u3002"
+            )
+        else:
+            body_lines.append(
+                "\u672c\u62a5\u544a\u4f1a\u6839\u636e\u9879\u76ee\u7c7b\u578b\u3001\u5f53\u524d\u9636\u6bb5\u3001\u8bc4\u4f30\u76ee\u6807\u548c\u5546\u4e1a\u5316\u5468\u671f\u8c03\u6574\u8bc4\u4ef7\u89c6\u89d2\uff0c\u91cd\u70b9\u68c0\u67e5\u8bc1\u636e\u5f3a\u5ea6\u3001\u7528\u6237\u75db\u70b9\u3001\u7559\u5b58\u6216\u4ea4\u6613\u673a\u5236\u3001\u5546\u4e1a\u5316\u8def\u5f84\u4e0e\u6267\u884c\u53ef\u884c\u6027\u3002"
+            )
+        body_lines.extend(
+            [
+                "",
+                "但 context-aware 不等于放宽标准。如果场景不清楚、技术验证不足、试点路径不明确、部署成本不可解释或商业化里程碑不具体，报告仍然会明确指出。",
+            ]
+        )
+    else:
+        body_lines = [
+            "## Assessment Lens",
+            "",
+            "This report uses the following assessment context:",
+            f"- Project sector: {sector_label_en}",
+            f"- Current stage: {stage_label_en}",
+            f"- Evaluation goal: {goal_label_en}",
+            f"- Commercialization horizon: {horizon_label_en}",
+            "",
+        ]
+        if long_cycle_context:
+            body_lines.append(
+                "This report should not treat short-term revenue, CAC, or fast profitability as the only signals. For DeepTech / Embodied AI / Hardware / Biotech or pre-commercial projects, it focuses on scenario clarity, technical feasibility, task success rate, pilot path, data loop, deployment cost, delivery complexity, industry partners, capital needs, and milestones."
+            )
+        else:
+            body_lines.append(
+                "This report calibrates its judgment to the project sector, current stage, evaluation goal, and commercialization horizon, with emphasis on evidence strength, customer pain, retention or transaction behavior, commercialization path, and execution credibility."
+            )
+        body_lines.extend(
+            [
+                "",
+                "Context-aware does not mean lenient. If scenario definition, technical validation, pilot path, deployment economics, or commercialization milestones are weak, the report should still state that clearly.",
+            ]
+        )
+
+    return "\n".join(body_lines).strip()
+
+
+def ensure_report_has_assessment_lens(
+    report_markdown: str,
+    context: dict,
+    language: str,
+) -> str:
+    raw_report = str(report_markdown or "").strip()
+    if not raw_report:
+        return build_assessment_lens_markdown(context, language)
+
+    heading_patterns = (
+        r"(?mi)^\s*#{1,2}\s*Assessment Lens\s*$",
+        r"(?mi)^\s*#{1,2}\s*\u8bc4\u4f30\u89c6\u89d2\s*$",
+    )
+    for pattern in heading_patterns:
+        if re.search(pattern, raw_report):
+            return raw_report
+
+    assessment_lens_markdown = build_assessment_lens_markdown(context, language)
+    return f"{assessment_lens_markdown}\n\n{raw_report}".strip()
 
 
 def profile_is_complete(profile: dict) -> bool:
@@ -3062,21 +3312,44 @@ elif st.session_state.flow_step == "review_all":
                     f"{st.session_state.answers_text}"
                 )
                 report_template = REPORT_PROMPT_EN if language == "en" else REPORT_PROMPT_ZH
-                prompt = report_template.format(
+                base_report_prompt = report_template.format(
                     founder_background=founder_profile.get("founder_background", st.session_state.founder_background),
                     project_description=founder_profile.get("project_description", st.session_state.project_description),
                     current_evidence=founder_profile.get("current_evidence", st.session_state.current_evidence),
                     funding_goal=founder_profile.get("funding_goal", st.session_state.funding_goal),
                     qa_transcript=qa_transcript,
                 )
+                context = current_assessment_context()
+                assessment_context_block = build_assessment_context_prompt_block(
+                    context,
+                    language,
+                )
+                report_evaluation_lens_block = build_report_evaluation_lens(
+                    context,
+                    language,
+                )
+                prompt = "\n\n".join(
+                    block
+                    for block in (
+                        assessment_context_block,
+                        report_evaluation_lens_block,
+                        base_report_prompt,
+                    )
+                    if block
+                )
 
                 update_report_progress(65, t["report_progress_calling_model"], delay=0.3)
-                report_text = call_model(prompt)
+                raw_report = call_model(prompt)
+                report_markdown = ensure_report_has_assessment_lens(
+                    raw_report,
+                    context,
+                    language,
+                )
 
                 update_report_progress(85, t["report_progress_parsing_structure"], delay=0.18)
-                st.session_state.report_markdown = report_text
-                st.session_state.report_json = safe_parse_report_json(report_text)
-                st.session_state.report_sections = parse_report_markdown_sections(report_text)
+                st.session_state.report_markdown = report_markdown
+                st.session_state.report_json = safe_parse_report_json(report_markdown)
+                st.session_state.report_sections = parse_report_markdown_sections(report_markdown)
 
                 update_report_progress(95, t["report_progress_preparing_display"], delay=0.16)
                 st.session_state.report_ready = True
@@ -3146,14 +3419,37 @@ elif st.session_state.flow_step == "questions_fallback" and st.session_state.que
                         f"{st.session_state.answers_text}"
                     )
                     report_template = REPORT_PROMPT_EN if language == "en" else REPORT_PROMPT_ZH
-                    prompt = report_template.format(
+                    base_report_prompt = report_template.format(
                         founder_background=st.session_state.founder_background,
                         project_description=st.session_state.project_description,
                         current_evidence=st.session_state.current_evidence,
                         funding_goal=st.session_state.funding_goal,
                         qa_transcript=qa_transcript,
                     )
-                    st.session_state.report_markdown = call_model(prompt)
+                    context = current_assessment_context()
+                    assessment_context_block = build_assessment_context_prompt_block(
+                        context,
+                        language,
+                    )
+                    report_evaluation_lens_block = build_report_evaluation_lens(
+                        context,
+                        language,
+                    )
+                    prompt = "\n\n".join(
+                        block
+                        for block in (
+                            assessment_context_block,
+                            report_evaluation_lens_block,
+                            base_report_prompt,
+                        )
+                        if block
+                    )
+                    raw_report = call_model(prompt)
+                    st.session_state.report_markdown = ensure_report_has_assessment_lens(
+                        raw_report,
+                        context,
+                        language,
+                    )
                     st.session_state.flow_step = "report_ready"
                 except Exception as e:
                     st.error(f"{t['err_report']}{e}")
