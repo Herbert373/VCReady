@@ -1,0 +1,18 @@
+﻿
+Path                    Exists Policy                    
+----                    ------ ------                    
+.env                      True 存在即可；禁止读取、禁止打印、禁止复制、禁止提交  
+.env.example              True 可读；可作为环境变量模板检查            
+.venv                     True 禁止复制、禁止进入重构素材包、禁止提交       
+.git                      True 禁止展开、禁止复制、禁止进入重构素材包       
+__pycache__               True 禁止进入重构素材包；提交前应清理或忽略       
+app.py                    True Phase 0 禁止修改；Phase 4 前必须备份
+prompts.py                True Phase 0 禁止修改；Phase 4 前必须备份
+requirements.txt          True Phase 0 禁止修改              
+README.md                 True Phase 0 只读；Phase 8 才考虑更新  
+tasks\current_commit.md   True Phase 0 只读；Phase 9 再更新    
+tasks\progress_log.md     True Phase 0 只读；Phase 9 再更新    
+.agents                   True 只读引用；不要改 skill            
+
+
+

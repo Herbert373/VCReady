@@ -1,0 +1,45 @@
+﻿
+Depth Type RelativePath                                                 Length LastWriteTime     
+----- ---- ------------                                                 ------ -------------     
+    1 Dir  .agents                                                             2026/5/12 17:00:19
+    1 File .env                                                         766    2026/5/8 20:23:00 
+    1 File .env.example                                                 766    2026/5/8 20:23:00 
+    1 File .gitignore                                                   230    2026/5/8 14:01:54 
+    1 File AGENTS.md                                                    4838   2026/5/8 20:23:00 
+    1 File AGENTS.md.bak                                                4838   2026/5/8 20:23:00 
+    1 File app.py                                                       163138 2026/5/14 19:46:09
+    1 File CLAUDE.md                                                    5308   2026/5/8 20:23:00 
+    1 File CLAUDE.md.bak                                                5308   2026/5/8 20:23:00 
+    1 Dir  data                                                                2026/5/7 20:30:56 
+    1 Dir  docs                                                                2026/6/8 21:36:34 
+    1 Dir  portfolio_assets                                                    2026/5/8 22:11:37 
+    1 File prompts.py                                                   3914   2026/5/8 20:23:00 
+    1 File README.md                                                    4237   2026/5/8 20:23:00 
+    1 File requirements.txt                                             54     2026/5/7 22:57:56 
+    1 Dir  tasks                                                               2026/5/14 19:39:54
+    2 Dir  .agents\skills                                                      2026/5/14 18:24:54
+    2 File data\user_testing_template.csv                               130    2026/5/7 20:30:56 
+    2 Dir  docs\refactor_vcready_landing                                       2026/6/8 21:36:34 
+    2 File docs\VCReady_PRD_v0.1.md                                     3300   2026/5/7 23:46:32 
+    2 File docs\VCReady_PRD_v0.2.md                                     4740   2026/5/8 20:23:00 
+    2 File docs\VCReady_v0.3_Guided_Flow_Spec.md                        9134   2026/5/9 10:05:38 
+    2 Dir  portfolio_assets\demo                                               2026/5/8 22:11:36 
+    2 Dir  portfolio_assets\notes                                              2026/5/8 22:11:37 
+    2 Dir  portfolio_assets\screenshots                                        2026/5/8 22:36:06 
+    2 File tasks\current_commit.md                                      3191   2026/5/14 19:38:09
+    2 File tasks\progress_log.md                                        2379   2026/5/14 19:40:16
+    3 Dir  .agents\skills\vcready-commit-plan                                  2026/5/12 17:00:38
+    3 Dir  .agents\skills\vcready-ui-style                                     2026/5/14 18:25:05
+    3 Dir  docs\refactor_vcready_landing\codex_prompts                         2026/6/8 21:36:34 
+    3 Dir  docs\refactor_vcready_landing\powershell_commands                   2026/6/8 21:36:34 
+    3 Dir  docs\refactor_vcready_landing\run_reports                           2026/6/8 21:36:35 
+    3 File portfolio_assets\screenshots\01_home_english.png             166714 2026/5/8 22:27:12 
+    3 File portfolio_assets\screenshots\02_home_chinese.png             180852 2026/5/8 22:27:28 
+    3 File portfolio_assets\screenshots\03_founder_dossier_sidebar.png  59602  2026/5/8 22:28:33 
+    3 File portfolio_assets\screenshots\04_pressure_test_memo.png       224963 2026/5/8 22:32:08 
+    3 File portfolio_assets\screenshots\05_founder_response_section.png 221996 2026/5/8 22:32:48 
+    3 File portfolio_assets\screenshots\06-1_reflection_report_1.png    129805 2026/5/8 22:35:44 
+    3 File portfolio_assets\screenshots\06-2_reflection_report_2.png    160565 2026/5/8 22:36:06 
+
+
+

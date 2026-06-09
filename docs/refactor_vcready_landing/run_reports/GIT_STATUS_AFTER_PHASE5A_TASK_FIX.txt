@@ -1,0 +1,8 @@
+﻿ M app.py
+?? .agents/
+?? AGENTS.md.bak
+?? CLAUDE.md.bak
+?? backups/
+?? docs/refactor_vcready_landing/
+?? pages/
+?? tasks/

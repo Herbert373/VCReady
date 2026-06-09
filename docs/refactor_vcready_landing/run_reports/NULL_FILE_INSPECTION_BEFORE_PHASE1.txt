@@ -1,0 +1,1 @@
+﻿No stray file named $null found at project root.

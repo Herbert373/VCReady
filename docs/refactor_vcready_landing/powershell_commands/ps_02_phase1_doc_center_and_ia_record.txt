@@ -1,0 +1,9 @@
+﻿Phase 1 PowerShell prep was executed at: 2026-06-09 09:01:53 +08:00
+Project root: C:\Users\Administrator\Desktop\VCReady_Demo
+Created or updated:
+- docs\refactor_vcready_landing\codex_prompts\_CURRENT_CODEX_TASK.md
+- docs\refactor_vcready_landing\codex_prompts\codex_02_phase1_doc_center_and_ia.md
+- docs\refactor_vcready_landing\codex_prompts\_ONE_LINE_TO_CODEX.txt
+- docs\refactor_vcready_landing\run_reports\PHASE1_ENTRY_NOTE.md
+- docs\refactor_vcready_landing\run_reports\GIT_STATUS_BEFORE_PHASE1.txt
+- docs\refactor_vcready_landing\run_reports\NULL_FILE_INSPECTION_BEFORE_PHASE1.txt

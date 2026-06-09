@@ -1,0 +1,25 @@
+﻿VCReady Phase 0 Retry Path Bridge Summary
+Generated at: 2026-06-08 21:50:38
+
+Main project root:
+C:\Users\Administrator\Desktop\VCReady_Demo
+
+Updated current Codex task:
+C:\Users\Administrator\Desktop\VCReady_Demo\docs\refactor_vcready_landing\codex_prompts\_CURRENT_CODEX_TASK.md
+
+Archived task:
+C:\Users\Administrator\Desktop\VCReady_Demo\docs\refactor_vcready_landing\codex_prompts\codex_01b_phase0_retry_path_aware_readonly_audit.md
+
+One-line prompt:
+C:\Users\Administrator\Desktop\VCReady_Demo\docs\refactor_vcready_landing\codex_prompts\_ONE_LINE_TO_CODEX.txt
+
+Path policy:
+C:\Users\Administrator\Desktop\VCReady_Demo\docs\refactor_vcready_landing\codex_prompts\_CODEX_PATH_POLICY.md
+
+Detected Codex worktree copies:
+C:\Users\Administrator\.codex\worktrees\ffd3\VCReady_Demo
+
+Important:
+- Do NOT ask Codex to read a relative task path from .codex worktree.
+- Use the absolute one-line prompt in _ONE_LINE_TO_CODEX.txt.
+- Phase 1 should wait until this Phase 0 Retry succeeds.

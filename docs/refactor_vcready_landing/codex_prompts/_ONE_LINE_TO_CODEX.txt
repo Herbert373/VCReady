@@ -1,0 +1,1 @@
+﻿请读取 C:\Users\Administrator\Desktop\VCReady_Demo\docs\refactor_vcready_landing\codex_prompts\_CURRENT_CODEX_TASK.md 并严格执行；本轮是 Phase 5A Workspace 迁移副本创建后的只读验证任务，如果当前目录不是 C:\Users\Administrator\Desktop\VCReady_Demo，请先切换到该目录；不要修改任何文件。

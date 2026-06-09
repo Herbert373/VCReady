@@ -1,0 +1,11 @@
+﻿
+Pattern     PresentInGitignore
+-------     ------------------
+.env                      True
+.venv                     True
+__pycache__               True
+*.pyc                     True
+backups/                 False
+
+
+

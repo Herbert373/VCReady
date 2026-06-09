@@ -21,4 +21,5 @@ Thumbs.db
 .claude/
 .codex/
 *.local.toml
-*.local.json
+*.local.jsonbackups/
+*.bak
