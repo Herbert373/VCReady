@@ -4,7 +4,7 @@
 
 ## What this is
 
-VCReady is a working Streamlit prototype built for the HKUST(GZ) Red Bird MPhil application portfolio. A founder fills in their background, project, evidence, and funding goal. The app simulates a sharp early-stage VC, generates 7 pressure-test questions, and, after the founder answers, returns a structured Founder Reflection Report with scores and concrete advice.
+VCReady is a working Streamlit prototype. A founder fills in their background, project, evidence, and funding goal. The app simulates a sharp early-stage VC, generates 7 pressure-test questions, and, after the founder answers, returns a structured Founder Reflection Report with scores and concrete advice.
 
 ## Why it exists
 
@@ -99,6 +99,3 @@ Defined in `.env.example`. The app reads the OpenAI-compatible block. Anthropic-
 - Multi-round investor challenge mode.
 - User testing with a structured feedback template.
 
-## Non-commercial disclaimer
-
-VCReady is a working prototype built for the HKUST(GZ) Red Bird MPhil application portfolio. It is **not** a commercial product, has **no** users, **no** funding, and is **not** deployed to production. Every part of this repo should be read in that context.
